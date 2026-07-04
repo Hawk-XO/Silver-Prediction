@@ -20,6 +20,7 @@ import yfinance as yf
 
 TICKERS = {
     "comex_silver": "SI=F",      # COMEX Silver futures (continuous, front-month)
+    "comex_gold": "GC=F",        # COMEX Gold futures (continuous, front-month)
     "usdinr": "USDINR=X",        # USD/INR spot exchange rate
     "dxy": "DX-Y.NYB",           # US Dollar Index
 }
@@ -48,6 +49,15 @@ def _fetch_single(ticker: str, start: str | None, end: str | None) -> pd.DataFra
 def fetch_comex_silver(start: str | None = None, end: str | None = None) -> pd.DataFrame:
     """Fetch COMEX Silver futures (SI=F) OHLCV, indexed by date (IST)."""
     return _fetch_single(TICKERS["comex_silver"], start, end)
+
+
+def fetch_comex_gold(start: str | None = None, end: str | None = None) -> pd.DataFrame:
+    """Fetch COMEX Gold futures (GC=F) OHLCV, indexed by date (IST).
+
+    Used in features/cross_asset.py to build the Gold-Silver ratio, a
+    commonly watched relative-value signal in precious metals markets.
+    """
+    return _fetch_single(TICKERS["comex_gold"], start, end)
 
 
 def fetch_usdinr(start: str | None = None, end: str | None = None) -> pd.DataFrame:

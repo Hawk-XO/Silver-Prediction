@@ -116,4 +116,6 @@ def generate_full_synthetic_dataset(start_date: str = "2024-01-01", n_days: int 
         "comex_silver": generate_synthetic_global_factor(start_date, n_days, start_price=24.0, daily_vol=0.014, seed_offset=1),
         "usdinr": generate_synthetic_global_factor(start_date, n_days, start_price=83.0, daily_vol=0.003, seed_offset=2),
         "dxy": generate_synthetic_global_factor(start_date, n_days, start_price=104.0, daily_vol=0.004, seed_offset=3),
+        # Gold, added in Phase 3 for the Gold-Silver ratio feature.
+        "comex_gold": generate_synthetic_global_factor(start_date, n_days, start_price=2050.0, daily_vol=0.008, seed_offset=4),
     }
