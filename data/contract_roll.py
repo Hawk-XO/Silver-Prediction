@@ -76,7 +76,7 @@ def build_continuous_series(
     front_month_by_date = (
         df.reset_index()
         .groupby("date", group_keys=False)
-        .apply(lambda g: _pick_front_month(g))
+        .apply(lambda g: _pick_front_month(g), include_groups=False)
     )
     front_month_by_date.name = "front_contract"
 
