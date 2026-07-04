@@ -61,6 +61,30 @@ config/     # config + .env loading
   full ingestion pipeline, including a check that ratio-adjustment removes
   artificial roll-date price jumps. All 5 tests currently pass.
 
+### Addendum: batch bhavcopy processor
+
+MCX's website disallows automated/bot access (robots.txt), so fully
+automated fetching of MCX Silver data isn't something this project scrapes
+around — that's their stated policy on their own data. Instead:
+
+- `data/batch_bhavcopy_processor.py` — automates everything AFTER a manual
+  download. Drop any number of manually-downloaded MCX bhavcopy or
+  historical-data CSVs into a folder (any naming, any date range), and
+  `process_bhavcopy_folder(folder, commodity="SILVER")` filters to the
+  target commodity, builds a proper per-expiry contract identifier
+  (commodity + expiry date, so different expiry months aren't collapsed
+  into one contract), and outputs data in the exact schema
+  `build_continuous_series()` expects.
+- `exact_match=True` (default) ensures "SILVER" doesn't also pull in
+  "SILVERM"/"SILVERMIC" as substring matches — these are distinct products
+  and mixing them would corrupt the continuous series.
+- `tests/test_batch_bhavcopy_processor.py` — 6 tests covering exact-match
+  filtering, contract/expiry identification, and end-to-end feed into
+  `build_continuous_series()`. All passing.
+- `data/mcx_loader.py`'s column aliases were expanded to cover real MCX
+  bhavcopy column names (`TradDt`, `OpenPrice`, `ClosePrice`,
+  `TotalTradedQty`, etc.) discovered while building this test.
+
 ### Known limitation
 
 `global_factors.py` has not been tested against a live network call in

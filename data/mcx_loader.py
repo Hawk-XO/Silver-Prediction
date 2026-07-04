@@ -17,14 +17,14 @@ import pandas as pd
 # Map of common column-name variants -> our canonical schema.
 # Canonical schema: date, open, high, low, close, volume, open_interest, contract
 _COLUMN_ALIASES = {
-    "date": ["date", "timestamp", "datetime", "trading_date", "trade_date"],
-    "open": ["open", "open_price", "o"],
-    "high": ["high", "high_price", "h"],
-    "low": ["low", "low_price", "l"],
-    "close": ["close", "close_price", "c", "ltp", "settle", "settlement_price"],
-    "volume": ["volume", "vol", "traded_qty", "total_traded_qty"],
+    "date": ["date", "timestamp", "datetime", "trading_date", "trade_date", "traddt", "date1"],
+    "open": ["open", "open_price", "o", "openprice"],
+    "high": ["high", "high_price", "h", "highprice"],
+    "low": ["low", "low_price", "l", "lowprice"],
+    "close": ["close", "close_price", "c", "ltp", "settle", "settlement_price", "closeprice", "settlementprice"],
+    "volume": ["volume", "vol", "traded_qty", "total_traded_qty", "totaltradedqty", "totaltradedquantity"],
     "open_interest": ["open_interest", "oi", "openinterest"],
-    "contract": ["contract", "symbol", "expiry_symbol", "instrument"],
+    "contract": ["contract", "symbol", "expiry_symbol", "instrument", "instrumentname"],
 }
 
 REQUIRED_COLUMNS = ["date", "open", "high", "low", "close"]
