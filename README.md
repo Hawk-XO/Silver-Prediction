@@ -85,6 +85,42 @@ around — that's their stated policy on their own data. Instead:
   bhavcopy column names (`TradDt`, `OpenPrice`, `ClosePrice`,
   `TotalTradedQty`, etc.) discovered while building this test.
 
+### Addendum 2: fully-automated MCX proxy (recommended path going forward)
+
+Manual bhavcopy downloads (Addendum 1) work but are tedious. `data/mcx_proxy.py`
+gives a **zero-manual-step, fully automated** alternative: it reconstructs
+an MCX Silver-equivalent price series from COMEX Silver + USD/INR (both
+already fetched automatically via `global_factors.py`), using the same
+import-parity relationship that drives MCX Silver's actual pricing:
+
+```
+mcx_proxy_price = comex_silver_usd_per_oz * usdinr * 32.1507 (oz->kg) * (1 + premium_pct)
+```
+
+- `fetch_mcx_silver_proxy(start, end, premium_pct)` — fully automated fetch, no downloads.
+- `calibrate_premium(proxy_df, real_mcx_close)` — once you have even a small
+  sample of real MCX prices (5-10 days is enough — from a manual bhavcopy
+  pull, or eyeballing a chart), this fits the constant premium/discount so
+  the proxy's absolute price level matches real MCX, not just its shape.
+- Tested via mocked COMEX/USDINR inputs (4 tests, all passing) — the
+  calculation logic, premium scaling, and calibration math are verified.
+  **The live yfinance fetch itself has NOT been tested end-to-end**, because
+  this build sandbox's network doesn't reach Yahoo Finance — run
+  `fetch_mcx_silver_proxy()` once yourself to confirm it returns real data
+  before relying on it.
+
+Trade-off to know about: the proxy's absolute price *level* is
+approximate until calibrated (import duty/local premium isn't something
+COMEX+USDINR alone can capture). Its day-to-day *returns* — which is what
+we actually model, per PROJECT_NOTES.md's target definition — are much
+more reliable immediately, since COMEX and USDINR moves dominate MCX
+Silver's daily return regardless of the fixed premium.
+
+Recommended going forward: use `mcx_proxy.py` as the primary, always-fresh
+data source for Phases 3-7, and treat the manual `batch_bhavcopy_processor.py`
+route as an optional calibration/validation source when you want to
+sanity-check the proxy against real prices occasionally.
+
 ### Known limitation
 
 `global_factors.py` has not been tested against a live network call in
