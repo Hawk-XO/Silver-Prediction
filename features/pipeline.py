@@ -32,6 +32,27 @@ from features.cross_asset import add_gold_silver_ratio, add_comex_mcx_spread_zsc
 from features.calendar_features import add_calendar_features
 from features.target import add_forward_log_return_target, DEFAULT_HORIZON
 
+# Columns coming straight from the Phase 2 merged frame (price LEVELS and
+# raw staleness flags) — excluded from `get_feature_columns()` because
+# PROJECT_NOTES.md Section 2 says not to fit models on non-stationary price
+# levels directly. Keep them in the DataFrame (useful for debugging/plots),
+# just don't hand them to a model as-is.
+RAW_INPUT_COLS = {
+    "mcx_open", "mcx_high", "mcx_low", "mcx_close", "mcx_volume", "mcx_oi",
+    "comex_close", "usdinr_close", "dxy_close",
+    "comex_stale", "usdinr_stale", "dxy_stale",
+}
+
+
+def get_feature_columns(df: pd.DataFrame) -> list[str]:
+    """
+    Return the list of engineered feature columns in `df` — i.e. everything
+    build_feature_matrix() added, excluding raw price-level inputs and the
+    `target` label. This is the column list Phase 4/5 (models, walk-forward)
+    should train on.
+    """
+    return [c for c in df.columns if c not in RAW_INPUT_COLS and c != "target"]
+
 
 def build_feature_matrix(
     merged_df: pd.DataFrame,
