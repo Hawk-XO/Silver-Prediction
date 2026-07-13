@@ -22,8 +22,8 @@ _COLUMN_ALIASES = {
     "high": ["high", "high_price", "h", "highprice"],
     "low": ["low", "low_price", "l", "lowprice"],
     "close": ["close", "close_price", "c", "ltp", "settle", "settlement_price", "closeprice", "settlementprice"],
-    "volume": ["volume", "vol", "traded_qty", "total_traded_qty", "totaltradedqty", "totaltradedquantity"],
-    "open_interest": ["open_interest", "oi", "openinterest"],
+    "volume": ["volume", "vol", "traded_qty", "total_traded_qty", "totaltradedqty", "totaltradedquantity", "vol (lots)", "volume (000's)", "volume (000s)"],
+    "open_interest": ["open_interest", "oi", "openinterest", "oi (lots)"],
     "contract": ["contract", "symbol", "expiry_symbol", "instrument", "instrumentname"],
 }
 

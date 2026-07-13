@@ -46,7 +46,7 @@ _COMMODITY_COLUMN_ALIASES = [
 # multiple expiry months trade simultaneously. We combine commodity + expiry
 # to build a true per-contract identifier, which is what contract_roll.py
 # needs to correctly detect roll dates.
-_EXPIRY_COLUMN_ALIASES = ["expirydate", "expiry_date", "expiry", "duedate"]
+_EXPIRY_COLUMN_ALIASES = ["expirydate", "expiry_date", "expiry", "duedate", "expiry date"]
 
 
 def _find_commodity_column(columns: list[str]) -> str | None:

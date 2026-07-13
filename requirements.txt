@@ -23,6 +23,10 @@ yfinance>=0.2
 nsepy>=0.8
 kiteconnect>=4.2
 
+# MySQL storage
+SQLAlchemy>=2.0
+PyMySQL>=1.1
+
 # Technical indicators
 ta>=0.11
 
