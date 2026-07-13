@@ -36,6 +36,7 @@ from __future__ import annotations
 import argparse
 import warnings
 
+import numpy as np
 import pandas as pd
 
 from data.db import load_ohlcv
@@ -45,7 +46,7 @@ from data.global_factors import fetch_all_global_factors, fetch_comex_gold
 from features.pipeline import build_feature_matrix, get_feature_columns
 from backtest.walk_forward import run_walk_forward, WalkForwardConfig
 from signals.signal_engine import SignalConfig, generate_signals
-from backtest.vectorbt_backtest import BacktestConfig, compare_to_buy_and_hold
+from backtest.vectorbt_backtest import BacktestConfig, compare_to_buy_and_hold, run_strategy_backtest, trade_pnl_breakdown
 from broker.kite_paper_broker import PaperKiteBroker
 from signals.tune_threshold import grid_search_threshold
 
@@ -70,6 +71,7 @@ def _strip_tz(df_or_series):
 
 def main(
     start_date: str | None = None,
+    end_date: str | None = None,
     tune_threshold: bool = False,
     confidence_threshold: float = 0.025,
 ):
@@ -84,6 +86,10 @@ def main(
         multi_contract = multi_contract[multi_contract.index >= pd.Timestamp(start_date)]
         if multi_contract.empty:
             raise RuntimeError(f"No rows on/after --start-date {start_date}.")
+    if end_date:
+        multi_contract = multi_contract[multi_contract.index <= pd.Timestamp(end_date)]
+        if multi_contract.empty:
+            raise RuntimeError(f"No rows on/before --end-date {end_date}.")
 
     print(f"  {len(multi_contract)} raw rows across "
           f"{multi_contract['contract'].nunique()} contract(s)/segments, "
@@ -168,6 +174,17 @@ def main(
     print("\n=== Performance report: strategy vs. buy-and-hold (REAL DATA) ===")
     print(comparison)
 
+    print("\n=== Trade-level PnL breakdown (strategy only) ===")
+    print("(diagnoses whether win-rate% is actually converting to money — "
+          "e.g. a >50% win rate can still lose if avg_loss dwarfs avg_win)")
+    strategy_pf = run_strategy_backtest(signals_df, price_col="entry_price", config=bt_config)
+    breakdown = trade_pnl_breakdown(strategy_pf)
+    for k, v in breakdown.items():
+        if isinstance(v, float) and not np.isnan(v):
+            print(f"  {k}: {v:,.2f}")
+        else:
+            print(f"  {k}: {v}")
+
     # --- Phase 7b: replay the same signals through the paper broker ---
     print("\nReplaying signals through the paper-trading broker...")
     broker = PaperKiteBroker(initial_cash=bt_config.init_cash)
@@ -208,6 +225,13 @@ if __name__ == "__main__":
              "Example: --start-date 2026-01-13 for roughly the last 6 months.",
     )
     parser.add_argument(
+        "--end-date", default=None,
+        help="Only use data on/before this date (YYYY-MM-DD). Combine with "
+             "--start-date to test a bounded window -- e.g. a period without "
+             "an outsized external shock (COVID crash, a war-driven spike, "
+             "etc.) -- rather than always running through to today.",
+    )
+    parser.add_argument(
         "--tune-threshold", action="store_true",
         help="Instead of running the full backtest, grid-search "
              "confidence_threshold against this dataset's own confidence "
@@ -225,6 +249,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     main(
         start_date=args.start_date,
+        end_date=args.end_date,
         tune_threshold=args.tune_threshold,
         confidence_threshold=args.confidence_threshold,
     )

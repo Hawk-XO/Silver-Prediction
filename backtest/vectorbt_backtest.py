@@ -166,6 +166,54 @@ def performance_report(pf: vbt.Portfolio, config: BacktestConfig | None = None) 
     }
 
 
+def trade_pnl_breakdown(pf: vbt.Portfolio) -> dict:
+    """
+    Per-trade PnL breakdown, separate from performance_report()'s aggregate
+    stats. Answers "are wins small and losses large (or the reverse)?" --
+    the question aggregate win-rate/Sharpe can't answer on its own. A
+    strategy can have win_rate > 50% and still lose money overall if
+    average losers are bigger than average winners (or the reverse: a low
+    win rate can still be profitable if winners run and losers are cut
+    short). Pulled from vectorbt's per-trade records, not its summary stats.
+    """
+    trades = pf.trades.records_readable
+    if len(trades) == 0:
+        return {
+            "num_trades": 0, "num_wins": 0, "num_losses": 0,
+            "avg_win": np.nan, "avg_loss": np.nan,
+            "median_win": np.nan, "median_loss": np.nan,
+            "largest_win": np.nan, "largest_loss": np.nan,
+            "avg_win_loss_ratio": np.nan,
+            "avg_holding_days": np.nan,
+            "expectancy_per_trade": np.nan,
+        }
+
+    pnl = trades["PnL"]
+    wins = pnl[pnl > 0]
+    losses = pnl[pnl < 0]
+    holding_days = (
+        pd.to_datetime(trades["Exit Timestamp"]) - pd.to_datetime(trades["Entry Timestamp"])
+    ).dt.days
+
+    avg_win = float(wins.mean()) if len(wins) else np.nan
+    avg_loss = float(losses.mean()) if len(losses) else np.nan
+
+    return {
+        "num_trades": int(len(trades)),
+        "num_wins": int(len(wins)),
+        "num_losses": int(len(losses)),
+        "avg_win": avg_win,
+        "avg_loss": avg_loss,
+        "median_win": float(wins.median()) if len(wins) else np.nan,
+        "median_loss": float(losses.median()) if len(losses) else np.nan,
+        "largest_win": float(wins.max()) if len(wins) else np.nan,
+        "largest_loss": float(losses.min()) if len(losses) else np.nan,
+        "avg_win_loss_ratio": float(abs(avg_win / avg_loss)) if avg_loss not in (0, np.nan) and not np.isnan(avg_loss) else np.nan,
+        "avg_holding_days": float(holding_days.mean()),
+        "expectancy_per_trade": float(pnl.mean()),
+    }
+
+
 def compare_to_buy_and_hold(
     signals_df: pd.DataFrame,
     price_col: str = "entry_price",
