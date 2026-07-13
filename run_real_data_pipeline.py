@@ -47,6 +47,7 @@ from backtest.walk_forward import run_walk_forward, WalkForwardConfig
 from signals.signal_engine import SignalConfig, generate_signals
 from backtest.vectorbt_backtest import BacktestConfig, compare_to_buy_and_hold
 from broker.kite_paper_broker import PaperKiteBroker
+from signals.tune_threshold import grid_search_threshold
 
 pd.set_option("display.width", 140)
 pd.set_option("display.max_columns", None)
@@ -67,7 +68,11 @@ def _strip_tz(df_or_series):
     return df_or_series
 
 
-def main(start_date: str | None = None):
+def main(
+    start_date: str | None = None,
+    tune_threshold: bool = False,
+    confidence_threshold: float = 0.025,
+):
     print("Loading real data from MySQL (proxy + kite_api rows)...")
     multi_contract = load_ohlcv()
     if multi_contract.empty:
@@ -133,12 +138,26 @@ def main(start_date: str | None = None):
     signal_input = wf_results[["meta_pred"]].join(
         model_ready[["atr_14", "ret_std_20", "mcx_close"]], how="left"
     )
+
+    if tune_threshold:
+        print("\n=== Confidence-threshold grid search ===")
+        print("(candidates are the 10th/25th/40th/50th/60th/75th/90th "
+              "percentiles of THIS dataset's own confidence distribution — "
+              "see signals/tune_threshold.py's module docstring for how to "
+              "read this table without overfitting the threshold to it)")
+        grid = grid_search_threshold(signal_input)
+        print(grid.to_string(index=False))
+        print(
+            "\nPick a threshold from the table above (or a nearby value) "
+            "and pass it as --confidence-threshold on your next run — this "
+            "run stops here rather than silently picking one for you."
+        )
+        return grid, None
+
     # NOTE: 0.025 was tuned against synthetic.py's prediction magnitude, not
-    # real data's. Check the signal value_counts below — if it's almost all
-    # HOLD or almost no HOLD at all, re-tune this threshold against the
-    # actual distribution of meta_pred on this real dataset before trusting
-    # the backtest that follows.
-    signal_config = SignalConfig(confidence_threshold=0.025, cooldown_days=3)
+    # real data's. Run with --tune-threshold first if you haven't yet re-
+    # calibrated this for real data — see signals/tune_threshold.py.
+    signal_config = SignalConfig(confidence_threshold=confidence_threshold, cooldown_days=3)
     signals_df = generate_signals(signal_input, signal_config)
     print(signals_df["signal"].value_counts().to_string())
 
@@ -188,5 +207,24 @@ if __name__ == "__main__":
              "long time over years of history. "
              "Example: --start-date 2026-01-13 for roughly the last 6 months.",
     )
+    parser.add_argument(
+        "--tune-threshold", action="store_true",
+        help="Instead of running the full backtest, grid-search "
+             "confidence_threshold against this dataset's own confidence "
+             "distribution and print a comparison table, then stop. Run "
+             "this first on real data before trusting the default 0.025 "
+             "(tuned against synthetic data, not this dataset).",
+    )
+    parser.add_argument(
+        "--confidence-threshold", type=float, default=0.025,
+        help="SignalConfig.confidence_threshold to use for the full run "
+             "(ignored if --tune-threshold is passed). Default 0.025 is "
+             "the synthetic-data-tuned value from run_phase7_demo.py — "
+             "override this once you've picked a value via --tune-threshold.",
+    )
     args = parser.parse_args()
-    main(start_date=args.start_date)
+    main(
+        start_date=args.start_date,
+        tune_threshold=args.tune_threshold,
+        confidence_threshold=args.confidence_threshold,
+    )
