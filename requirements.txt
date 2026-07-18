@@ -18,6 +18,10 @@ torch>=2.1
 vectorbt>=0.26
 backtrader>=1.9.78
 
+# UI (Track B control dashboard)
+streamlit>=1.38
+matplotlib>=3.8
+
 # Data sources
 yfinance>=0.2
 nsepy>=0.8

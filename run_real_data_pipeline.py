@@ -47,6 +47,7 @@ from features.pipeline import build_feature_matrix, get_feature_columns
 from backtest.walk_forward import run_walk_forward, WalkForwardConfig
 from signals.signal_engine import SignalConfig, generate_signals
 from backtest.vectorbt_backtest import BacktestConfig, compare_to_buy_and_hold, run_strategy_backtest, trade_pnl_breakdown
+from backtest.atr_exit_backtest import AtrExitConfig, run_atr_exit_backtest
 from broker.kite_paper_broker import PaperKiteBroker
 from signals.tune_threshold import grid_search_threshold
 
@@ -82,10 +83,24 @@ def main(
             "mcx_silver_ohlcv is empty — run data/build_merged_history.py "
             "and/or data/kite_fetcher.py first."
         )
-    if start_date:
-        multi_contract = multi_contract[multi_contract.index >= pd.Timestamp(start_date)]
+    # IMPORTANT: --start-date must NOT be applied to the raw load directly.
+    # Feature warmup (~200 rows) + walk-forward min_train_size (120 rows)
+    # need real history strictly BEFORE start_date to produce any
+    # predictions at all inside the requested window — filtering the raw
+    # load by start_date destroys exactly that lookback (this broke the
+    # 2020-03-01 COVID-window test: only 213 raw rows survived, nowhere
+    # near enough warmup+training). Instead we load from a buffered
+    # earlier date, run the full pipeline including warmup/training on
+    # that wider range, and only slice down to [start_date, end_date] once
+    # we get to signal generation/backtesting below. --end-date is safe to
+    # apply directly to the raw load since nothing downstream needs data
+    # AFTER the window being tested.
+    LOOKBACK_BUFFER_DAYS = 500  # ~320 trading days of warmup+min_train, plus slack for weekends/holidays
+    load_start = pd.Timestamp(start_date) - pd.Timedelta(days=LOOKBACK_BUFFER_DAYS) if start_date else None
+    if load_start is not None:
+        multi_contract = multi_contract[multi_contract.index >= load_start]
         if multi_contract.empty:
-            raise RuntimeError(f"No rows on/after --start-date {start_date}.")
+            raise RuntimeError(f"No rows on/after {load_start.date()} (buffered from --start-date {start_date}).")
     if end_date:
         multi_contract = multi_contract[multi_contract.index <= pd.Timestamp(end_date)]
         if multi_contract.empty:
@@ -145,6 +160,28 @@ def main(
         model_ready[["atr_14", "ret_std_20", "mcx_close"]], how="left"
     )
 
+    # Now that warmup + walk-forward training have used the full buffered
+    # range, slice down to the actually-requested window for reporting.
+    # (This is the step that makes --start-date a report-window filter,
+    # not a data-availability filter — see the loading comment above.)
+    pre_slice_n = len(signal_input)
+    if start_date:
+        signal_input = signal_input[signal_input.index >= pd.Timestamp(start_date)]
+    if end_date:
+        signal_input = signal_input[signal_input.index <= pd.Timestamp(end_date)]
+    if (start_date or end_date) and len(signal_input) != pre_slice_n:
+        print(f"  ({pre_slice_n} predictions generated total using buffered "
+              f"lookback; {len(signal_input)} fall inside the requested "
+              f"[{start_date or 'earliest'}, {end_date or 'latest'}] window "
+              f"and are used below.)")
+    if signal_input.empty:
+        raise RuntimeError(
+            f"No walk-forward predictions fall inside "
+            f"[{start_date or 'earliest'}, {end_date or 'latest'}] — the "
+            f"window may be entirely inside the warmup/training lookback. "
+            f"Try a start_date further from the earliest available data."
+        )
+
     if tune_threshold:
         print("\n=== Confidence-threshold grid search ===")
         print("(candidates are the 10th/25th/40th/50th/60th/75th/90th "
@@ -185,6 +222,20 @@ def main(
         else:
             print(f"  {k}: {v}")
 
+    print("\n=== Same signals, but exits enforce stop_loss/target (not just signal changes) ===")
+    print("(see backtest/atr_exit_backtest.py docstring for the close-only-price "
+          "approximation this makes — compare these stats to the block above, "
+          "which only ever exits on a signal flip)")
+    atr_result = run_atr_exit_backtest(signals_df, AtrExitConfig(
+        fees=bt_config.fees, slippage=bt_config.slippage, init_cash=bt_config.init_cash
+    ))
+    for k, v in atr_result["stats"].items():
+        if isinstance(v, float) and not np.isnan(v):
+            print(f"  {k}: {v:,.2f}")
+        else:
+            print(f"  {k}: {v}")
+    print(f"  exit_reason_counts: {atr_result['exit_reason_counts']}")
+
     # --- Phase 7b: replay the same signals through the paper broker ---
     print("\nReplaying signals through the paper-trading broker...")
     broker = PaperKiteBroker(initial_cash=bt_config.init_cash)
@@ -218,18 +269,22 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--start-date", default=None,
-        help="Only use data on/after this date (YYYY-MM-DD). Useful for a "
-             "quick ~6-month test run before committing to the full "
-             "multi-year walk-forward, which retrains daily and can take a "
-             "long time over years of history. "
-             "Example: --start-date 2026-01-13 for roughly the last 6 months.",
+        help="Only REPORT signals/backtest results on/after this date "
+             "(YYYY-MM-DD). Feature warmup and walk-forward training still "
+             "use real history from well before this date (a ~500-day "
+             "buffer is loaded automatically) so predictions near the start "
+             "of your window aren't undertrained — this does NOT shrink "
+             "the data used for training, only the reporting window. "
+             "Example: --start-date 2020-03-01 --end-date 2020-12-31 to "
+             "test just the COVID-crash period.",
     )
     parser.add_argument(
         "--end-date", default=None,
-        help="Only use data on/before this date (YYYY-MM-DD). Combine with "
-             "--start-date to test a bounded window -- e.g. a period without "
-             "an outsized external shock (COVID crash, a war-driven spike, "
-             "etc.) -- rather than always running through to today.",
+        help="Only use data on/before this date (YYYY-MM-DD), and only "
+             "report signals/backtest results up to it. Combine with "
+             "--start-date to test a bounded window -- e.g. a period "
+             "without an outsized external shock, or specifically a period "
+             "WITH one -- rather than always running through to today.",
     )
     parser.add_argument(
         "--tune-threshold", action="store_true",
