@@ -30,6 +30,7 @@ real CSV data.
 from __future__ import annotations
 
 import datetime as dt
+from typing import Callable
 
 import pandas as pd
 from kiteconnect import KiteConnect
@@ -116,17 +117,28 @@ def fetch_contract_history(
     return df[["open", "high", "low", "close", "volume", "open_interest"]]
 
 
-def backfill_history(commodity: str, years_back: int = 2) -> pd.DataFrame:
+def _fetch_all_contracts_in_window(
+    commodity: str,
+    window_start: dt.date,
+    window_end: dt.date,
+    kite: KiteConnect | None = None,
+    log: Callable[[str], None] | None = None,
+) -> pd.DataFrame:
     """
-    Pulls `years_back` years of daily history across every contract expiry
-    for `commodity`, stitches them into a continuous series, and upserts the
-    result into MySQL (source='kite_api'). Returns the continuous DataFrame.
-    """
-    kite = _get_client()
-    contracts = list_contracts(commodity, kite=kite)
+    Shared per-contract fetch loop used by both backfill_history() (wide,
+    years-back window) and fetch_missing_range() (narrow, just-the-gap
+    window). Walks every contract expiry for `commodity`, pulls whatever
+    Kite has for the overlap between [window_start, window_end] and that
+    contract's lifetime, and returns the concatenated raw per-contract rows
+    (NOT yet upserted -- callers own that, since backfill_history() also
+    needs the continuous series before it upserts).
 
-    today = dt.date.today()
-    window_start = today - dt.timedelta(days=365 * years_back)
+    log: optional callable(str) for progress messages -- defaults to
+    print() when not provided, so this stays usable from plain scripts too.
+    """
+    log = log or print
+    kite = kite or _get_client()
+    contracts = list_contracts(commodity, kite=kite)
 
     all_contract_frames = []
     for _, row in contracts.iterrows():
@@ -139,26 +151,44 @@ def backfill_history(commodity: str, years_back: int = 2) -> pd.DataFrame:
         # returns data starting from its real listing date, so there's no
         # need (and no benefit) to guess a cutoff ourselves.
         contract_start = window_start
-        contract_end = min(today, expiry)
+        contract_end = min(window_end, expiry)
+        if contract_start > contract_end:
+            continue
 
-        print(f"Fetching {row['tradingsymbol']} (expiry {expiry}) "
-              f"from {contract_start} to {contract_end} ...")
+        log(f"Fetching {row['tradingsymbol']} (expiry {expiry}) "
+            f"from {contract_start} to {contract_end} ...")
         hist = fetch_contract_history(row["instrument_token"], contract_start, contract_end, kite=kite)
         if hist.empty:
-            print(f"  -> no data returned (may be too old for Kite's history retention).")
+            log(f"  -> no data returned (may be too old for Kite's history retention).")
             continue
 
         hist["contract"] = f"{commodity}_{row['tradingsymbol']}"
         all_contract_frames.append(hist)
 
     if not all_contract_frames:
+        return pd.DataFrame()
+    return pd.concat(all_contract_frames)
+
+
+def backfill_history(commodity: str, years_back: int = 2) -> pd.DataFrame:
+    """
+    Pulls `years_back` years of daily history across every contract expiry
+    for `commodity`, stitches them into a continuous series, and upserts the
+    result into MySQL (source='kite_api'). Returns the continuous DataFrame.
+    """
+    kite = _get_client()
+    today = dt.date.today()
+    window_start = today - dt.timedelta(days=365 * years_back)
+
+    multi_contract_df = _fetch_all_contracts_in_window(commodity, window_start, today, kite=kite)
+
+    if multi_contract_df.empty:
         raise RuntimeError(
             f"No historical data returned for any {commodity} contract in the "
             f"last {years_back} years — check KITE_ACCESS_TOKEN is fresh (it "
             f"expires daily) and that {commodity} is the right commodity name."
         )
 
-    multi_contract_df = pd.concat(all_contract_frames)
     continuous = build_continuous_series(multi_contract_df)
 
     engine = get_engine()
@@ -166,6 +196,69 @@ def backfill_history(commodity: str, years_back: int = 2) -> pd.DataFrame:
     print(f"Upserted {n} raw per-contract rows into mcx_silver_ohlcv (source=kite_api).")
 
     return continuous
+
+
+def fetch_missing_range(
+    commodity: str,
+    from_date: dt.date,
+    to_date: dt.date,
+    log: Callable[[str], None] | None = None,
+) -> int:
+    """
+    Fetches and upserts just the [from_date, to_date] gap for `commodity` --
+    the narrow-window counterpart to backfill_history()'s years-back pull.
+    This is what the UI's startup freshness check calls when the latest
+    stored date is behind today, rather than re-pulling years of history
+    every time.
+
+    Falls back to data.mcx_proxy's COMEX+USDINR proxy (source='proxy') if
+    Kite isn't configured or the call fails for any reason (expired token,
+    no market data yet, etc.) -- so a missing/stale KITE_ACCESS_TOKEN
+    degrades to the existing proxy path instead of blocking the whole UI
+    run. Returns the number of rows upserted (0 if nothing new was found on
+    either path).
+
+    log: optional callable(str) for progress messages, e.g. wired to a
+    Streamlit status box by the caller -- defaults to print().
+    """
+    log = log or print
+
+    if from_date > to_date:
+        return 0
+
+    if settings.kite_configured:
+        try:
+            multi_contract_df = _fetch_all_contracts_in_window(commodity, from_date, to_date, log=log)
+            if not multi_contract_df.empty:
+                n = upsert_ohlcv(multi_contract_df, source="kite_api")
+                log(f"Upserted {n} row(s) into mcx_silver_ohlcv (source=kite_api) "
+                    f"for {from_date} to {to_date}.")
+                return n
+            log(f"Kite returned no rows for {from_date} to {to_date} "
+                f"(holiday/weekend-only gap, or too recent) -- falling back to proxy.")
+        except Exception as e:
+            log(f"Kite fetch failed ({e}) -- falling back to the COMEX+USDINR proxy.")
+    else:
+        log("Kite Connect not configured (missing KITE_API_KEY/SECRET/ACCESS_TOKEN) "
+            "-- using the COMEX+USDINR proxy instead.")
+
+    from data.mcx_proxy import fetch_mcx_silver_proxy
+
+    proxy = fetch_mcx_silver_proxy(start=from_date.isoformat(), end=to_date.isoformat())
+    if proxy.empty:
+        log(f"Proxy fetch also returned nothing for {from_date} to {to_date}.")
+        return 0
+
+    proxy_ohlcv = proxy[["mcx_proxy_open", "mcx_proxy_high", "mcx_proxy_low", "mcx_proxy_close"]].rename(
+        columns={
+            "mcx_proxy_open": "open", "mcx_proxy_high": "high",
+            "mcx_proxy_low": "low", "mcx_proxy_close": "close",
+        }
+    )
+    proxy_ohlcv["contract"] = f"{commodity}_PROXY"
+    n = upsert_ohlcv(proxy_ohlcv, source="proxy")
+    log(f"Upserted {n} row(s) into mcx_silver_ohlcv (source=proxy) for {from_date} to {to_date}.")
+    return n
 
 
 def fetch_latest_eod(commodity: str) -> pd.DataFrame:

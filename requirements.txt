@@ -31,6 +31,10 @@ kiteconnect>=4.2
 SQLAlchemy>=2.0
 PyMySQL>=1.1
 
+# EOD job scheduling + failure alerting (Track C)
+APScheduler>=3.10
+requests>=2.31
+
 # Technical indicators
 ta>=0.11
 

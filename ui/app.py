@@ -26,13 +26,16 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 
 from ui.pipeline_runner import (
-    RunConfig, run_pipeline, AVAILABLE_CONTRACTS, DEFAULT_ARIMA_EXOG_CHOICES,
+    RunConfig, run_pipeline, DEFAULT_ARIMA_EXOG_CHOICES,
+    check_and_fetch_missing_data,
 )
+from ui.charts import build_price_chart, build_equity_chart
+from ui.format_utils import build_display_comparison, metric_winner
+from ui.report_export import build_pdf_report
 
 st.set_page_config(page_title="Silver Prediction — Control", layout="wide", page_icon="◆")
 
@@ -47,27 +50,66 @@ st.markdown("""
     .stButton button:hover { background-color: #CCCCCC; color: #000000; }
     hr { border-color: #2A2A2A; }
 
-    /* Multiselect "pill" tags (e.g. ARIMA exogenous columns) were rendering
-       white background + white text -- invisible. Streamlit injects its own
-       theme CSS dynamically (after this block), and at equal specificity
-       the later one wins -- so these selectors are deliberately chained
-       (data-testid + data-baseweb + wildcard) to out-specificity it rather
-       than relying on !important alone. */
-    div[data-testid="stMultiSelect"] span[data-baseweb="tag"],
-    div[data-testid="stMultiSelect"] div[data-baseweb="tag"] {
-        background-color: #FFFFFF !important;
-    }
-    div[data-testid="stMultiSelect"] span[data-baseweb="tag"] *,
-    div[data-testid="stMultiSelect"] div[data-baseweb="tag"] * {
-        color: #000000 !important;
-        -webkit-text-fill-color: #000000 !important;
-        fill: #000000 !important;
-    }
-
-    /* Dropdown option lists (selectbox / multiselect menus) -- make sure
-       option text stays readable against the dark menu background. */
+    /* Dropdown option lists (selectbox menus) -- make sure option text
+       stays readable against the dark menu background. */
     ul[data-testid="stSelectboxVirtualDropdown"] li,
     div[data-baseweb="popover"] li { color: #F2F2F2 !important; }
+
+    /* ------------------------------------------------------------------
+       Checkbox contrast fix. Streamlit's dark theme uses primaryColor
+       (white, from .streamlit/config.toml) for BOTH the checked box fill
+       AND its checkmark glyph -- white-on-white, so the tick is invisible.
+       Cover a few possible BaseWeb DOM shapes since the exact structure
+       has changed across Streamlit versions; harmless if a rule below
+       simply doesn't match anything in your installed version.
+       ------------------------------------------------------------------ */
+    label[data-baseweb="checkbox"] > span:first-child,
+    label[data-baseweb="checkbox"] > div:first-child {
+        border-color: #777777 !important;
+    }
+    label[data-baseweb="checkbox"] input:checked ~ span:first-child,
+    label[data-baseweb="checkbox"] input:checked ~ div:first-child {
+        background-color: #FFFFFF !important;
+        border-color: #FFFFFF !important;
+    }
+    label[data-baseweb="checkbox"] input:checked ~ span:first-child svg,
+    label[data-baseweb="checkbox"] input:checked ~ div:first-child svg,
+    label[data-baseweb="checkbox"] svg {
+        fill: #000000 !important;
+        stroke: #000000 !important;
+        color: #000000 !important;
+    }
+
+    /* ------------------------------------------------------------------
+       st.pills (ARIMA exogenous columns) contrast fix -- selected pill
+       renders with a white/primary-colored background; force dark text
+       on it specifically instead of the default light theme text color.
+       ------------------------------------------------------------------ */
+    button[aria-pressed="true"],
+    button[kind="pillsButtonActive"] {
+        color: #000000 !important;
+        background-color: #FFFFFF !important;
+    }
+    button[aria-pressed="true"] p,
+    button[kind="pillsButtonActive"] p {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+    }
+
+    /* ------------------------------------------------------------------
+       date_input's calendar popup: the selected-day cell renders with a
+       white background AND white text -- invisible. Force both explicitly
+       (previously only text color was forced, which wasn't enough since
+       the background was the actual problem). Multiple selector shapes
+       for robustness across BaseWeb versions.
+       ------------------------------------------------------------------ */
+    div[data-baseweb="calendar"] [aria-selected="true"],
+    div[data-baseweb="calendar"] [aria-selected="true"] > div,
+    div[data-baseweb="calendar"] div[role="gridcell"][aria-selected="true"] div {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+    }
 
     /* Progress bar + status text while a run is in flight */
     div[data-testid="stProgress"] > div > div > div { background-color: #FFFFFF; }
@@ -82,7 +124,10 @@ st.caption("Real-data run: features → walk-forward → signals → backtest vs
 with st.sidebar:
     st.header("Configuration")
 
-    contract = st.selectbox("Contract", AVAILABLE_CONTRACTS, index=AVAILABLE_CONTRACTS.index("SILVERMIC"))
+    # SILVERMIC is the only contract we actually have data for -- not a
+    # real choice, so no dropdown; shown as static info instead.
+    contract = "SILVERMIC"
+    st.text("Contract: SILVERMIC")
 
     st.subheader("Date range")
     use_full_history = st.checkbox("Use full available history", value=True)
@@ -98,11 +143,17 @@ with st.sidebar:
     st.subheader("Model hyperparameters")
     xgb_max_depth = st.slider("XGBoost max_depth", 1, 10, 3)
     xgb_n_estimators = st.slider("XGBoost n_estimators", 10, 300, 80, step=10)
-    arima_exog_cols = st.multiselect(
-        "ARIMA exogenous columns", DEFAULT_ARIMA_EXOG_CHOICES,
+    arima_exog_cols = st.pills(
+        "ARIMA exogenous columns", DEFAULT_ARIMA_EXOG_CHOICES, selection_mode="multi",
         default=["ret_mean_5", "comex_mcx_spread_z_10"],
-    )
+    ) or []
     min_train_size = st.number_input("Walk-forward min_train_size", min_value=10, max_value=1000, value=120, step=10)
+    st.caption(
+        "Feature warmup (ema_200 needs 200 prior bars) already eats into short date ranges "
+        "before this even applies -- e.g. ~250 trading days (1yr) leaves ~50 rows. If that's "
+        "less than min_train_size, it auto-shrinks to fit rather than failing (you'll see a "
+        "warning); widen the date range for a more reliable run."
+    )
 
     st.subheader("Signal settings")
     confidence_threshold = st.slider("Confidence threshold", 0.0, 2.0, 0.5, step=0.01,
@@ -122,8 +173,29 @@ with st.sidebar:
 # ----------------------------------------------------------------- main ---
 if "result" not in st.session_state:
     st.session_state.result = None
+if "freshness_checked_this_session" not in st.session_state:
+    st.session_state.freshness_checked_this_session = False
 
 if run_clicked:
+    # --- 4th requested feature: on the first RUN of the session, check
+    # whether stored data is behind today's date and auto-fetch the gap
+    # (Kite if configured, else the COMEX+USDINR proxy) before running the
+    # pipeline, with a live status panel so it's obvious data is being
+    # fetched rather than the app just looking stuck. ---
+    if not st.session_state.freshness_checked_this_session:
+        with st.status("Checking data freshness...", expanded=True) as status:
+            def _freshness_log(msg: str) -> None:
+                st.write(msg)
+
+            freshness = check_and_fetch_missing_data(commodity=contract, progress_callback=_freshness_log)
+            st.write(freshness.message)
+            status.update(
+                label="Data freshness check complete" if freshness.checked else "Data freshness check failed",
+                state="complete" if freshness.checked else "error",
+                expanded=False,
+            )
+        st.session_state.freshness_checked_this_session = True
+
     cfg = RunConfig(
         contract=contract, start_date=start_date, end_date=end_date, horizon=int(horizon),
         xgb_max_depth=int(xgb_max_depth), xgb_n_estimators=int(xgb_n_estimators),
@@ -208,23 +280,19 @@ else:
 
     st.markdown("---")
 
-    # --- equity curve, monochrome ---
+    # --- 1st requested feature: interactive TradingView-style Plotly charts,
+    # replacing the old static matplotlib equity curve. ---
+    st.subheader("Price chart — trade markers")
+    if result.price_series is not None and not result.price_series.empty:
+        st.plotly_chart(build_price_chart(result.price_series, result.trade_markers), width="stretch")
+    else:
+        st.caption("No price series available for this run.")
+
     st.subheader("Equity curve — strategy vs buy-and-hold")
-    fig, ax = plt.subplots(figsize=(11, 4))
-    fig.patch.set_facecolor("#0A0A0A")
-    ax.set_facecolor("#0A0A0A")
-    ax.plot(result.strategy_equity.index, result.strategy_equity.values,
-            color="#FFFFFF", linewidth=1.4, label="Strategy")
-    ax.plot(result.buy_hold_equity.index, result.buy_hold_equity.values,
-            color="#777777", linewidth=1.1, linestyle="--", label="Buy & hold")
-    ax.axhline(result.config.init_cash, color="#333333", linewidth=0.8, linestyle=":")
-    for spine in ax.spines.values():
-        spine.set_color("#2A2A2A")
-    ax.tick_params(colors="#AAAAAA", labelsize=8)
-    ax.set_ylabel("Portfolio value", color="#AAAAAA", fontsize=9)
-    ax.legend(facecolor="#0A0A0A", edgecolor="#2A2A2A", labelcolor="#F2F2F2", fontsize=9)
-    ax.grid(True, color="#1A1A1A", linewidth=0.5)
-    st.pyplot(fig, width="stretch")
+    st.plotly_chart(
+        build_equity_chart(result.strategy_equity, result.buy_hold_equity, result.config.init_cash),
+        width="stretch",
+    )
 
     st.markdown("---")
 
@@ -232,7 +300,28 @@ else:
 
     with col_left:
         st.subheader("Performance report")
-        st.dataframe(result.comparison.style.format("{:,.4f}"), width="stretch")
+        # Transposed (metrics as rows, strategy/buy&hold as columns) --
+        # the old layout rendered 9 metrics as 9 COLUMNS, which is what
+        # was getting cut off at 100% zoom. A fixed 2-data-column table
+        # always fits regardless of screen width. Color-coded green/red
+        # per metric for whichever side wins it (see
+        # ui/format_utils.metric_winner for the higher/lower-is-better
+        # rules per metric).
+        display_comparison = build_display_comparison(result.comparison)
+        raw_metrics = result.comparison.T.index.tolist()
+
+        def _highlight_winner(row):
+            metric = raw_metrics[display_comparison.index.get_loc(row.name)]
+            winner = metric_winner(result.comparison, metric)
+            styles = ["", ""]
+            if winner == "strategy":
+                styles = ["background-color: #123B22; color: #6FE39A; font-weight: 600", ""]
+            elif winner == "buy_and_hold":
+                styles = ["", "background-color: #123B22; color: #6FE39A; font-weight: 600"]
+            return styles
+
+        styled = display_comparison.style.apply(_highlight_winner, axis=1)
+        st.dataframe(styled, width="stretch")
 
         st.subheader("Signal counts")
         signal_df = pd.DataFrame.from_dict(result.signal_counts, orient="index", columns=["count"])
@@ -254,3 +343,20 @@ else:
         b1.metric("Orders placed", result.broker_n_orders)
         b2.metric("Realised P&L", f"{result.broker_pnl['realised']:,.0f}")
         b3.metric("Total P&L", f"{result.broker_pnl['total']:,.0f}")
+
+    st.markdown("---")
+
+    # --- 3rd requested feature: export button, shown after the run's data
+    # has finished rendering above (not blocking anything above it). ---
+    export_col, _ = st.columns([1, 3])
+    with export_col:
+        if st.button("Export report as PDF", width="stretch"):
+            with st.spinner("Building PDF report..."):
+                pdf_bytes = build_pdf_report(result)
+            st.download_button(
+                "Download PDF",
+                data=pdf_bytes,
+                file_name=f"silver_prediction_report_{pd.Timestamp.today().date()}.pdf",
+                mime="application/pdf",
+                width="stretch",
+            )

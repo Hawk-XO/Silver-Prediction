@@ -76,6 +76,7 @@ def run_walk_forward(
     target_col: str = "target",
     config: WalkForwardConfig | None = None,
     progress_callback: Optional[Callable[[int, int], None]] = None,
+    include_live_row: bool = False,
 ) -> pd.DataFrame:
     """
     Run the expanding-window walk-forward loop over `df` (already
@@ -88,6 +89,17 @@ def run_walk_forward(
         panel uses it to drive a real progress bar) -- has zero effect on
         results and defaults to None everywhere else (scripts, tests,
         the feature-search harness).
+
+    include_live_row: if True, don't skip trailing rows whose target is
+        NaN (normally the last `horizon` rows, since their forward return
+        isn't resolved yet -- see features/target.py). Used by the EOD job
+        (run_eod_job.py / signals/live_predict.py) to get today's
+        prediction with y_true=NaN in the output rather than no row at
+        all. Safe to enable: those NaN-target rows are never eligible as
+        *training* rows for any test point (purge/embargo already
+        excludes them via valid_train_indices), so this only adds output
+        rows, never leaks target NaNs into a fit. Defaults to False so
+        every backtest/tests/scripts call is unaffected.
 
     Returns
     -------
@@ -104,7 +116,7 @@ def run_walk_forward(
     for i, test_idx in enumerate(range(cfg.min_train_size, n)):
         if progress_callback is not None:
             progress_callback(i, total_folds)
-        if pd.isna(y.iloc[test_idx]):
+        if pd.isna(y.iloc[test_idx]) and not include_live_row:
             continue  # tail rows with no realized future close yet
 
         train_idx = valid_train_indices(test_idx, cfg.horizon)

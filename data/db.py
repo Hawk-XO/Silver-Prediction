@@ -152,3 +152,33 @@ def load_ohlcv(contract: str | None = None, source: str | None = None, engine=No
 
     df = pd.read_sql(text(query), engine, params=params, parse_dates=["date"])
     return df.set_index("date")
+
+
+def get_latest_date(commodity: str | None = None, engine=None):
+    """
+    Return the most recent `date` stored for a commodity (matched by prefix
+    before the first underscore in `contract`, same convention as
+    data.pipeline_common.load_real_features), or None if the table is empty
+    / doesn't exist yet.
+
+    Deliberately a single MAX(date) query rather than loading the whole
+    table (load_ohlcv) just to check freshness -- this is meant to be cheap
+    enough to call once on every UI page load.
+    """
+    engine = engine or get_engine()
+    query = "SELECT MAX(date) AS latest FROM mcx_silver_ohlcv"
+    params = {}
+    if commodity:
+        query += " WHERE SUBSTRING_INDEX(contract, '_', 1) = :commodity"
+        params["commodity"] = commodity
+
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text(query), params).scalar()
+    except Exception:
+        # Table doesn't exist yet (fresh DB) -- treat as "no data stored".
+        return None
+
+    if result is None:
+        return None
+    return pd.Timestamp(result)
