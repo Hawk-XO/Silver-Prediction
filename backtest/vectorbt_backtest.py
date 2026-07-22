@@ -48,9 +48,17 @@ import vectorbt as vbt
 
 @dataclass
 class BacktestConfig:
-    fees: float = 0.0003        # ~3 bps: approx brokerage + exchange txn charges per trade value — tune to your broker
-    slippage: float = 0.0005    # ~5 bps: approx adverse fill vs. reference close
-    margin_pct: float = 0.15    # approx MCX Silver initial margin, % of notional — verify against current MCX circulars
+    fees: float = 0.00015       # ~1.5 bps: Zerodha commodity brokerage is flat Rs 20 or 0.03% per order,
+                                 # whichever is LOWER -- the flat Rs 20 dominates for any order above ~Rs
+                                 # 66,700 notional, so at current SILVERMIC prices (~Rs 1.8-2L/kg) this is
+                                 # brokerage-plus-exchange-charges-plus-GST as a fraction of notional, not
+                                 # the raw 0.03% cap. Recompute if your typical order size or the exchange's
+                                 # fee schedule changes.
+    slippage: float = 0.0003    # ~3 bps: approx adverse fill vs. reference close for a liquid contract
+    margin_pct: float = 0.12    # ~12%: MCX raised Silver's SPAN+exposure margin by 1.5pp in Oct 2025 amid
+                                 # global volatility (on top of the usual ~5-8% baseline) -- verify against
+                                 # current MCX circulars/your broker's margin calculator before relying on this
+
     init_cash: float = 1_000_000.0
     freq: str = "1D"
 

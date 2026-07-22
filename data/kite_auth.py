@@ -62,6 +62,7 @@ def exchange_request_token(request_token: str) -> str:
     access_token = session_data["access_token"]
 
     _write_access_token_to_env(access_token)
+    apply_access_token_to_running_settings(access_token)
     print("Success. KITE_ACCESS_TOKEN has been written to .env.")
     print(f"(Zerodha client: {session_data.get('user_id', '?')} — "
           f"token valid until end of trading day / next login, whichever is first.)")
@@ -84,6 +85,46 @@ def _write_access_token_to_env(access_token: str) -> None:
         text = text.rstrip("\n") + f"\n{new_line}\n"
 
     ENV_PATH.write_text(text)
+
+
+def apply_access_token_to_running_settings(access_token: str) -> None:
+    """
+    settings.settings is a frozen dataclass built once at import time, so
+    writing a new KITE_ACCESS_TOKEN to .env alone doesn't take effect until
+    the process restarts. This patches the already-loaded singleton in
+    place (object.__setattr__ bypasses the frozen dataclass's normal
+    write-protection) so a token exchanged mid-session through the UI's
+    connect flow works on the very next fetch, with no restart needed.
+    """
+    from config import settings as settings_module
+    object.__setattr__(settings_module.settings, "kite_access_token", access_token)
+
+
+def validate_access_token(access_token: str | None = None) -> tuple[bool, str]:
+    """
+    Checks whether a Kite access token actually works right now (as opposed
+    to just being a non-empty string) -- a token can be present in .env but
+    expired (Zerodha expires them daily) or simply wrong. Calls kite.profile(),
+    the cheapest authenticated endpoint Kite Connect offers, purely as a
+    connectivity/validity check.
+
+    Returns (is_valid, message) rather than raising, so UI code can show
+    the message directly without a try/except at the call site.
+    """
+    from config.settings import settings
+
+    token = access_token or settings.kite_access_token
+    if not settings.kite_api_key or not token:
+        return False, "Not connected — API key or access token missing."
+
+    kite = KiteConnect(api_key=settings.kite_api_key)
+    kite.set_access_token(token)
+    try:
+        profile = kite.profile()
+        return True, f"Connected as {profile.get('user_name', profile.get('user_id', 'Zerodha client'))}."
+    except Exception as e:
+        return False, f"Token rejected ({e}) — likely expired, needs a fresh login."
+
 
 
 def main() -> None:

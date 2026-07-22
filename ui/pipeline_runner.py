@@ -30,7 +30,7 @@ from backtest.walk_forward import run_walk_forward, WalkForwardConfig
 from signals.signal_engine import SignalConfig, generate_signals
 from backtest.vectorbt_backtest import (
     BacktestConfig, run_strategy_backtest, run_buy_and_hold_backtest,
-    performance_report, trade_pnl_breakdown,
+    performance_report, trade_pnl_breakdown, signals_to_position,
 )
 from broker.kite_paper_broker import PaperKiteBroker
 
@@ -70,9 +70,9 @@ class RunConfig:
     confidence_threshold: float = 0.5
     cooldown_days: int = 3
 
-    fees: float = 0.0003
-    slippage: float = 0.0005
-    margin_pct: float = 0.15
+    fees: float = 0.00015
+    slippage: float = 0.0003
+    margin_pct: float = 0.12
     init_cash: float = 1_000_000.0
     lot_size: int = 5   # arbitrary demo lot size for the paper-broker replay -- verify current MCX lot size before using for real sizing decisions
 
@@ -95,6 +95,7 @@ class RunResult:
     warning: str = ""                      # non-fatal notes (e.g. very few predictions)
     price_series: Optional[pd.Series] = None    # mcx_close over model_ready's range, for the price chart
     trade_markers: Optional[pd.DataFrame] = None  # non-HOLD rows (signal, entry_price), for BUY/SELL markers
+    position_series: Optional[pd.Series] = None  # 1=long, -1=short, 0=flat, per day -- for chart background shading
 
 
 def run_pipeline(
@@ -276,6 +277,7 @@ def run_pipeline(
         warning=warning,
         price_series=model_ready["mcx_close"] if "mcx_close" in model_ready.columns else None,
         trade_markers=signals_df[signals_df["signal"] != "HOLD"][["signal", "entry_price"]].copy(),
+        position_series=signals_to_position(signals_df["signal"]),
     )
 
 
@@ -389,3 +391,45 @@ def check_and_fetch_missing_data(
         checked=True, latest_before=latest, missing_days=missing_days,
         fetched=True, rows_upserted=n, message=message,
     )
+
+
+def load_preview_price_series(commodity: str = "SILVERMIC", lookback_days: int | None = None) -> pd.Series | None:
+    """
+    Cheap "just show me the price" load for the UI's pre-run preview chart --
+    deliberately NOT load_real_features() (which also merges in live global
+    factors via yfinance and runs the full feature-engineering pass; too
+    slow to call just to draw a line chart). This only loads raw OHLCV rows
+    for `commodity` from MySQL and stitches them into one continuous close
+    series via data.contract_roll.build_continuous_series -- the same roll
+    logic the real pipeline uses, just without the feature/model layers on
+    top.
+
+    lookback_days: None (default) shows EVERYTHING stored, however far back
+    it goes -- a previous version defaulted this to 730 days, which silently
+    clipped anything older than 2 years even though it was sitting right
+    there in MySQL. Pass an explicit number only if you actually want a
+    shorter preview window.
+
+    Returns None if there's no data at all yet for this commodity (fresh DB,
+    nothing fetched) -- the UI shows a placeholder message in that case
+    rather than an empty chart.
+    """
+    from data.db import load_ohlcv
+    from data.contract_roll import build_continuous_series
+
+    raw = load_ohlcv()
+    if raw.empty:
+        return None
+
+    raw = raw[raw["contract"].str.split("_").str[0] == commodity]
+    if raw.empty:
+        return None
+
+    if lookback_days is not None:
+        cutoff = pd.Timestamp.today() - pd.Timedelta(days=lookback_days)
+        raw = raw[raw.index >= cutoff]
+        if raw.empty:
+            return None
+
+    continuous = build_continuous_series(raw)
+    return continuous["close"]

@@ -31,11 +31,12 @@ import streamlit as st
 
 from ui.pipeline_runner import (
     RunConfig, run_pipeline, DEFAULT_ARIMA_EXOG_CHOICES,
-    check_and_fetch_missing_data,
+    check_and_fetch_missing_data, load_preview_price_series,
 )
-from ui.charts import build_price_chart, build_equity_chart
+from ui.charts import build_price_chart, build_price_only_chart, build_equity_chart
 from ui.format_utils import build_display_comparison, metric_winner
 from ui.report_export import build_pdf_report
+from ui.kite_connect import render_kite_connect_panel
 
 st.set_page_config(page_title="Silver Prediction — Control", layout="wide", page_icon="◆")
 
@@ -130,7 +131,10 @@ with st.sidebar:
     st.text("Contract: SILVERMIC")
 
     st.subheader("Date range")
-    use_full_history = st.checkbox("Use full available history", value=True)
+    use_full_history = st.checkbox(
+        "Use full available history", value=True,
+        help="Uses every stored row for this contract. Turn off to backtest a specific window instead.",
+    )
     if use_full_history:
         start_date, end_date = None, None
     else:
@@ -138,16 +142,36 @@ with st.sidebar:
         start_date = col1.date_input("Start", value=pd.Timestamp("2023-01-01")).isoformat()
         end_date = col2.date_input("End", value=pd.Timestamp.today()).isoformat()
 
-    horizon = st.number_input("Prediction horizon (days ahead)", min_value=1, max_value=20, value=1)
+    horizon = st.number_input(
+        "Prediction horizon (days ahead)", min_value=1, max_value=20, value=1,
+        help="How many trading days ahead the model predicts. 1 = next day's close; "
+             "higher values predict further out but with more uncertainty.",
+    )
 
     st.subheader("Model hyperparameters")
-    xgb_max_depth = st.slider("XGBoost max_depth", 1, 10, 3)
-    xgb_n_estimators = st.slider("XGBoost n_estimators", 10, 300, 80, step=10)
+    xgb_max_depth = st.slider(
+        "XGBoost max_depth", 1, 10, 3,
+        help="Max depth of each decision tree in the XGBoost model. Higher = can learn more "
+             "complex patterns, but risks overfitting to noise in a market this size of dataset.",
+    )
+    xgb_n_estimators = st.slider(
+        "XGBoost n_estimators", 10, 300, 80, step=10,
+        help="Number of trees XGBoost builds. More trees can improve accuracy up to a point, "
+             "then mostly just adds runtime without helping.",
+    )
     arima_exog_cols = st.pills(
         "ARIMA exogenous columns", DEFAULT_ARIMA_EXOG_CHOICES, selection_mode="multi",
         default=["ret_mean_5", "comex_mcx_spread_z_10"],
+        help="Extra features (beyond silver's own price history) fed to the ARIMA model as "
+             "external predictors -- e.g. the COMEX/MCX spread or gold/silver ratio. "
+             "Leave empty to run ARIMA on price history alone.",
     ) or []
-    min_train_size = st.number_input("Walk-forward min_train_size", min_value=10, max_value=1000, value=120, step=10)
+    min_train_size = st.number_input(
+        "Walk-forward min_train_size", min_value=10, max_value=1000, value=120, step=10,
+        help="Minimum number of past rows the model must see before it's allowed to make its "
+             "first prediction. Too low = early predictions are unreliable; too high = fewer "
+             "predictions overall for a given date range.",
+    )
     st.caption(
         "Feature warmup (ema_200 needs 200 prior bars) already eats into short date ranges "
         "before this even applies -- e.g. ~250 trading days (1yr) leaves ~50 rows. If that's "
@@ -156,16 +180,74 @@ with st.sidebar:
     )
 
     st.subheader("Signal settings")
-    confidence_threshold = st.slider("Confidence threshold", 0.0, 2.0, 0.5, step=0.01,
-                                      help="Predicted move must be >= this x recent daily vol to trade")
-    cooldown_days = st.number_input("Cooldown days", min_value=0, max_value=30, value=3)
+    confidence_threshold = st.slider(
+        "Confidence threshold", 0.0, 2.0, 0.5, step=0.01,
+        help="Predicted move must be >= this x recent daily volatility to trigger a BUY/SELL. "
+             "Higher = fewer, higher-conviction trades (more HOLDs); lower = more trades, "
+             "including weaker/noisier signals.",
+    )
+    cooldown_days = st.number_input(
+        "Cooldown days", min_value=0, max_value=30, value=3,
+        help="After a BUY or SELL, blocks a flip to the opposite side for this many days, even "
+             "if the model wants to reverse -- avoids whipsawing on noisy back-to-back signals.",
+    )
 
     with st.expander("Backtest costs / sizing"):
-        fees = st.number_input("Fees (fraction)", value=0.0003, format="%.4f")
-        slippage = st.number_input("Slippage (fraction)", value=0.0005, format="%.4f")
-        margin_pct = st.number_input("Margin % of notional", value=0.15, format="%.2f")
-        init_cash = st.number_input("Initial cash", value=1_000_000.0, step=100_000.0)
-        lot_size = st.number_input("Paper-broker lot size", value=5, min_value=1)
+        # Percent-based inputs (0.015 means 0.015%) instead of raw fractions
+        # (0.00015) -- "0.0003" reads as basically zero at a glance; "0.015%"
+        # (or the Rs estimate below it) actually says something. Converted
+        # to a fraction right before building RunConfig.
+        fees_pct = st.number_input(
+            "Fees (% of trade value)", value=0.015, step=0.001, format="%.3f",
+            help="Zerodha's commodity brokerage is flat Rs 20 or 0.03% per order, whichever is "
+                 "LOWER -- the flat Rs 20 wins for any order above ~Rs 66,700 notional, so at "
+                 "current SILVERMIC prices (~Rs 1.8-2L/kg) this default approximates brokerage + "
+                 "exchange charges + GST as a % of order value, not the raw 0.03% cap.",
+        )
+        slippage_pct = st.number_input(
+            "Slippage (% of price)", value=0.030, step=0.005, format="%.3f",
+            help="Assumed gap between the signal's price and your actual fill price -- models "
+                 "real-world execution not being instant/perfect. 0.03% is a reasonable estimate "
+                 "for a liquid contract like SILVERMIC; widen it for thinner contracts/hours.",
+        )
+        margin_pct_input = st.number_input(
+            "Margin (% of notional)", value=12.0, step=0.5, format="%.1f",
+            help="MCX's SPAN + exposure margin for Silver, roughly 5-8% in calm markets but "
+                 "raised ~1.5 percentage points in Oct 2025 amid global volatility -- 12% "
+                 "approximates that current, more volatile regime. Verify against MCX's live "
+                 "circulars or your broker's margin calculator; this only affects the reported "
+                 "margin-utilization metric, not position sizing.",
+        )
+        fees = fees_pct / 100
+        slippage = slippage_pct / 100
+        margin_pct = margin_pct_input / 100
+
+        init_cash = st.number_input(
+            "Initial cash", value=1_000_000.0, step=100_000.0,
+            help="Starting capital for both the strategy and buy-and-hold backtests.",
+        )
+        lot_size = st.number_input(
+            "Paper-broker lot size", value=5, min_value=1,
+            help="Contracts per paper-broker order, for the simulated order-placement replay "
+                 "(separate from the vectorbt backtest above it).",
+        )
+
+        # Rough current SILVERMIC price for translating the % inputs above
+        # into an actual rupee number -- approximate (verify against a live
+        # quote), just meant to make "0.015%" concrete rather than abstract.
+        _approx_price_per_kg = 190_000.0
+        _notional = _approx_price_per_kg * lot_size
+        _fee_rs = _notional * fees
+        _slippage_rs = _notional * slippage
+        st.caption(
+            f"At an approximate current SILVERMIC price of ~\u20b9{_approx_price_per_kg:,.0f}/kg "
+            f"and lot size {lot_size}, that's roughly \u20b9{_fee_rs:,.0f} in fees and "
+            f"\u20b9{_slippage_rs:,.0f} in slippage per order (\u20b9{_notional:,.0f} notional) -- "
+            f"verify against a live quote and your broker's calculator."
+        )
+
+    st.markdown("---")
+    render_kite_connect_panel()
 
     st.markdown("---")
     run_clicked = st.button("RUN", width="stretch")
@@ -175,6 +257,30 @@ if "result" not in st.session_state:
     st.session_state.result = None
 if "freshness_checked_this_session" not in st.session_state:
     st.session_state.freshness_checked_this_session = False
+
+# --- Data preview: shows what's already stored, before running anything.
+# Independent of the RUN flow below -- this is a cheap raw-price load
+# (see ui.pipeline_runner.load_preview_price_series), not the full
+# feature-engineering pipeline, so it's fine to show by default. ---
+if st.session_state.result is None:
+    st.subheader("Data preview")
+    try:
+        preview_series = load_preview_price_series(commodity=contract)
+    except Exception as e:
+        preview_series = None
+        st.caption(f"Couldn't load a preview (DB not reachable yet?): {e}")
+
+    if preview_series is not None and not preview_series.empty:
+        st.plotly_chart(build_price_only_chart(preview_series), width="stretch")
+        st.caption(
+            f"{len(preview_series):,} stored trading days, "
+            f"{preview_series.index.min().date()} to {preview_series.index.max().date()}. "
+            f"Configure parameters and click RUN for predictions, trade markers, and backtest results."
+        )
+    else:
+        st.info("No data stored yet for this contract -- click RUN to fetch and build the initial history.")
+
+    st.markdown("---")
 
 if run_clicked:
     # --- 4th requested feature: on the first RUN of the session, check
@@ -284,7 +390,14 @@ else:
     # replacing the old static matplotlib equity curve. ---
     st.subheader("Price chart — trade markers")
     if result.price_series is not None and not result.price_series.empty:
-        st.plotly_chart(build_price_chart(result.price_series, result.trade_markers), width="stretch")
+        st.plotly_chart(
+            build_price_chart(result.price_series, result.trade_markers, result.position_series),
+            width="stretch",
+        )
+        st.caption(
+            "Green triangle = BUY (go long) · Red triangle = SELL (go short) · "
+            "Green/red background tint = position held that day"
+        )
     else:
         st.caption("No price series available for this run.")
 

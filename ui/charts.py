@@ -64,14 +64,48 @@ def _base_layout(title: str, y_title: str) -> dict:
     )
 
 
-def build_price_chart(price_series: pd.Series, trade_markers: pd.DataFrame | None) -> go.Figure:
+def _add_position_shading(fig: go.Figure, position_series: pd.Series) -> None:
+    """
+    Adds translucent background bands showing when the strategy was long
+    (green tint), short (red tint), or flat (no tint) -- the "or whatever"
+    part of "buy and sell and short or whatever": SELL in this system means
+    going short (see backtest.vectorbt_backtest.signals_to_position), not
+    just exiting a long, so the shading makes that explicit at a glance
+    without having to read individual markers.
+    """
+    if position_series is None or position_series.empty:
+        return
+    pos = position_series.copy()
+    change_points = pos[pos != pos.shift(1)].index.tolist()
+    if not change_points:
+        return
+    boundaries = change_points + [pos.index[-1]]
+
+    for i in range(len(boundaries) - 1):
+        seg_start = boundaries[i]
+        seg_end = boundaries[i + 1]
+        val = pos.loc[seg_start]
+        if val == 0:
+            continue
+        color = "rgba(61,220,132,0.08)" if val == 1 else "rgba(255,92,92,0.08)"
+        fig.add_vrect(x0=seg_start, x1=seg_end, fillcolor=color, line_width=0, layer="below")
+
+
+def build_price_chart(price_series: pd.Series, trade_markers: pd.DataFrame | None,
+                       position_series: pd.Series | None = None) -> go.Figure:
     """
     price_series: close price indexed by date (model_ready['mcx_close']).
     trade_markers: DataFrame indexed by date with columns ['signal',
         'entry_price'] for non-HOLD rows (RunResult.trade_markers). May be
         None/empty if a run somehow produced no trades.
+    position_series: 1/0/-1 per day (RunResult.position_series) -- when
+        given, shades the background green while long and red while short
+        so direction is visible even between markers, not just at them.
     """
     fig = go.Figure()
+
+    _add_position_shading(fig, position_series)
+
     fig.add_trace(go.Scatter(
         x=price_series.index, y=price_series.values, mode="lines",
         line=dict(color=LINE_WHITE, width=1.3), name="MCX Silver (close)",
@@ -83,20 +117,36 @@ def build_price_chart(price_series: pd.Series, trade_markers: pd.DataFrame | Non
         sells = trade_markers[trade_markers["signal"] == "SELL"]
         if not buys.empty:
             fig.add_trace(go.Scatter(
-                x=buys.index, y=buys["entry_price"], mode="markers", name="BUY",
-                marker=dict(symbol="triangle-up", size=10, color=BUY_GREEN,
+                x=buys.index, y=buys["entry_price"], mode="markers", name="BUY — go long",
+                marker=dict(symbol="triangle-up", size=11, color=BUY_GREEN,
                             line=dict(width=1, color="#0A0A0A")),
-                hovertemplate="%{x|%Y-%m-%d}<br>BUY @ %{y:,.2f}<extra></extra>",
+                hovertemplate="%{x|%Y-%m-%d}<br>BUY — go LONG @ %{y:,.2f}<extra></extra>",
             ))
         if not sells.empty:
             fig.add_trace(go.Scatter(
-                x=sells.index, y=sells["entry_price"], mode="markers", name="SELL",
-                marker=dict(symbol="triangle-down", size=10, color=SELL_RED,
+                x=sells.index, y=sells["entry_price"], mode="markers", name="SELL — go short",
+                marker=dict(symbol="triangle-down", size=11, color=SELL_RED,
                             line=dict(width=1, color="#0A0A0A")),
-                hovertemplate="%{x|%Y-%m-%d}<br>SELL @ %{y:,.2f}<extra></extra>",
+                hovertemplate="%{x|%Y-%m-%d}<br>SELL — go SHORT @ %{y:,.2f}<extra></extra>",
             ))
 
     fig.update_layout(**_base_layout("Price with trade markers", "Price (\u20b9)"))
+    return fig
+
+
+def build_price_only_chart(price_series: pd.Series) -> go.Figure:
+    """
+    Bare price line with no trade markers -- used by the UI's pre-run
+    'preview data' chart (shows what's currently stored before you've run
+    anything, so 'a chart view alone like before running').
+    """
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=price_series.index, y=price_series.values, mode="lines",
+        line=dict(color=LINE_WHITE, width=1.3), name="MCX Silver (close)",
+        hovertemplate="%{x|%Y-%m-%d}<br>Close: %{y:,.2f}<extra></extra>",
+    ))
+    fig.update_layout(**_base_layout("Stored price history (preview)", "Price (\u20b9)"))
     return fig
 
 
