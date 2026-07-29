@@ -18,6 +18,8 @@ from __future__ import annotations
 import pandas as pd
 import yfinance as yf
 
+from data.retry import retry_with_backoff
+
 TICKERS = {
     "comex_silver": "SI=F",      # COMEX Silver futures (continuous, front-month)
     "comex_gold": "GC=F",        # COMEX Gold futures (continuous, front-month)
@@ -26,6 +28,7 @@ TICKERS = {
 }
 
 
+@retry_with_backoff(attempts=3, initial_delay=1.0, backoff_factor=2.0)
 def _fetch_single(ticker: str, start: str | None, end: str | None) -> pd.DataFrame:
     data = yf.download(ticker, start=start, end=end, progress=False, auto_adjust=True)
     if data.empty:

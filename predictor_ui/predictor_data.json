@@ -1,0 +1,2560 @@
+{
+  "generatedFrom": "real pipeline (features -> ARIMA+XGBoost+meta-learner walk-forward -> signal engine -> vectorbt backtest) on data/synthetic.py",
+  "nPredictions": 278,
+  "directionalAccuracy": 0.5107913669064749,
+  "avgAbsPctError": 0.009806093477644285,
+  "series": [
+    {
+      "date": "2024-03-27",
+      "actualPrice": 75886.63,
+      "predictedPrice": 74836.91,
+      "baseDate": "2024-03-26",
+      "basePrice": 74812.54,
+      "signal": "BUY",
+      "predictedReturn": 0.000326
+    },
+    {
+      "date": "2024-03-28",
+      "actualPrice": 76588.8,
+      "predictedPrice": 75905.14,
+      "baseDate": "2024-03-27",
+      "basePrice": 75886.63,
+      "signal": "HOLD",
+      "predictedReturn": 0.000244
+    },
+    {
+      "date": "2024-03-29",
+      "actualPrice": 78296.17,
+      "predictedPrice": 76618.01,
+      "baseDate": "2024-03-28",
+      "basePrice": 76588.8,
+      "signal": "BUY",
+      "predictedReturn": 0.000381
+    },
+    {
+      "date": "2024-04-01",
+      "actualPrice": 79001.58,
+      "predictedPrice": 78334.03,
+      "baseDate": "2024-03-29",
+      "basePrice": 78296.17,
+      "signal": "BUY",
+      "predictedReturn": 0.000483
+    },
+    {
+      "date": "2024-04-02",
+      "actualPrice": 77540.73,
+      "predictedPrice": 79051.5,
+      "baseDate": "2024-04-01",
+      "basePrice": 79001.58,
+      "signal": "BUY",
+      "predictedReturn": 0.000632
+    },
+    {
+      "date": "2024-04-03",
+      "actualPrice": 77493.95,
+      "predictedPrice": 77595.91,
+      "baseDate": "2024-04-02",
+      "basePrice": 77540.73,
+      "signal": "BUY",
+      "predictedReturn": 0.000711
+    },
+    {
+      "date": "2024-04-04",
+      "actualPrice": 76426.98,
+      "predictedPrice": 77531.23,
+      "baseDate": "2024-04-03",
+      "basePrice": 77493.95,
+      "signal": "BUY",
+      "predictedReturn": 0.000481
+    },
+    {
+      "date": "2024-04-05",
+      "actualPrice": 75968.33,
+      "predictedPrice": 76463.19,
+      "baseDate": "2024-04-04",
+      "basePrice": 76426.98,
+      "signal": "BUY",
+      "predictedReturn": 0.000474
+    },
+    {
+      "date": "2024-04-08",
+      "actualPrice": 77374.03,
+      "predictedPrice": 75992.92,
+      "baseDate": "2024-04-05",
+      "basePrice": 75968.33,
+      "signal": "BUY",
+      "predictedReturn": 0.000324
+    },
+    {
+      "date": "2024-04-09",
+      "actualPrice": 77983.84,
+      "predictedPrice": 77395.69,
+      "baseDate": "2024-04-08",
+      "basePrice": 77374.03,
+      "signal": "HOLD",
+      "predictedReturn": 0.00028
+    },
+    {
+      "date": "2024-04-10",
+      "actualPrice": 77347.98,
+      "predictedPrice": 78028.75,
+      "baseDate": "2024-04-09",
+      "basePrice": 77983.84,
+      "signal": "BUY",
+      "predictedReturn": 0.000576
+    },
+    {
+      "date": "2024-04-11",
+      "actualPrice": 76428.06,
+      "predictedPrice": 77390.64,
+      "baseDate": "2024-04-10",
+      "basePrice": 77347.98,
+      "signal": "BUY",
+      "predictedReturn": 0.000551
+    },
+    {
+      "date": "2024-04-12",
+      "actualPrice": 76473.43,
+      "predictedPrice": 76466.45,
+      "baseDate": "2024-04-11",
+      "basePrice": 76428.06,
+      "signal": "BUY",
+      "predictedReturn": 0.000502
+    },
+    {
+      "date": "2024-04-15",
+      "actualPrice": 75380.2,
+      "predictedPrice": 76503.26,
+      "baseDate": "2024-04-12",
+      "basePrice": 76473.43,
+      "signal": "BUY",
+      "predictedReturn": 0.00039
+    },
+    {
+      "date": "2024-04-16",
+      "actualPrice": 74790.5,
+      "predictedPrice": 75408.36,
+      "baseDate": "2024-04-15",
+      "basePrice": 75380.2,
+      "signal": "BUY",
+      "predictedReturn": 0.000374
+    },
+    {
+      "date": "2024-04-17",
+      "actualPrice": 75086.07,
+      "predictedPrice": 74809.29,
+      "baseDate": "2024-04-16",
+      "basePrice": 74790.5,
+      "signal": "HOLD",
+      "predictedReturn": 0.000251
+    },
+    {
+      "date": "2024-04-18",
+      "actualPrice": 76149.52,
+      "predictedPrice": 75098.72,
+      "baseDate": "2024-04-17",
+      "basePrice": 75086.07,
+      "signal": "HOLD",
+      "predictedReturn": 0.000169
+    },
+    {
+      "date": "2024-04-19",
+      "actualPrice": 76723.18,
+      "predictedPrice": 76167.07,
+      "baseDate": "2024-04-18",
+      "basePrice": 76149.52,
+      "signal": "HOLD",
+      "predictedReturn": 0.00023
+    },
+    {
+      "date": "2024-04-22",
+      "actualPrice": 74657.3,
+      "predictedPrice": 76749.66,
+      "baseDate": "2024-04-19",
+      "basePrice": 76723.18,
+      "signal": "BUY",
+      "predictedReturn": 0.000345
+    },
+    {
+      "date": "2024-04-23",
+      "actualPrice": 74945.47,
+      "predictedPrice": 74683.69,
+      "baseDate": "2024-04-22",
+      "basePrice": 74657.3,
+      "signal": "BUY",
+      "predictedReturn": 0.000353
+    },
+    {
+      "date": "2024-04-24",
+      "actualPrice": 75025.29,
+      "predictedPrice": 74953.19,
+      "baseDate": "2024-04-23",
+      "basePrice": 74945.47,
+      "signal": "HOLD",
+      "predictedReturn": 0.000103
+    },
+    {
+      "date": "2024-04-25",
+      "actualPrice": 75413.92,
+      "predictedPrice": 75037.98,
+      "baseDate": "2024-04-24",
+      "basePrice": 75025.29,
+      "signal": "HOLD",
+      "predictedReturn": 0.000169
+    },
+    {
+      "date": "2024-04-26",
+      "actualPrice": 76906.2,
+      "predictedPrice": 75429.67,
+      "baseDate": "2024-04-25",
+      "basePrice": 75413.92,
+      "signal": "HOLD",
+      "predictedReturn": 0.000209
+    },
+    {
+      "date": "2024-04-29",
+      "actualPrice": 75040.46,
+      "predictedPrice": 76924.12,
+      "baseDate": "2024-04-26",
+      "basePrice": 76906.2,
+      "signal": "HOLD",
+      "predictedReturn": 0.000233
+    },
+    {
+      "date": "2024-04-30",
+      "actualPrice": 74524.97,
+      "predictedPrice": 75064.94,
+      "baseDate": "2024-04-29",
+      "basePrice": 75040.46,
+      "signal": "BUY",
+      "predictedReturn": 0.000326
+    },
+    {
+      "date": "2024-05-01",
+      "actualPrice": 75070.31,
+      "predictedPrice": 74536.79,
+      "baseDate": "2024-04-30",
+      "basePrice": 74524.97,
+      "signal": "HOLD",
+      "predictedReturn": 0.000159
+    },
+    {
+      "date": "2024-05-02",
+      "actualPrice": 73673.71,
+      "predictedPrice": 75074.25,
+      "baseDate": "2024-05-01",
+      "basePrice": 75070.31,
+      "signal": "HOLD",
+      "predictedReturn": 5.2e-05
+    },
+    {
+      "date": "2024-05-03",
+      "actualPrice": 75005.2,
+      "predictedPrice": 73685.48,
+      "baseDate": "2024-05-02",
+      "basePrice": 73673.71,
+      "signal": "HOLD",
+      "predictedReturn": 0.00016
+    },
+    {
+      "date": "2024-05-06",
+      "actualPrice": 75352.55,
+      "predictedPrice": 75005.97,
+      "baseDate": "2024-05-03",
+      "basePrice": 75005.2,
+      "signal": "HOLD",
+      "predictedReturn": 1e-05
+    },
+    {
+      "date": "2024-05-07",
+      "actualPrice": 76137.18,
+      "predictedPrice": 75370.33,
+      "baseDate": "2024-05-06",
+      "basePrice": 75352.55,
+      "signal": "HOLD",
+      "predictedReturn": 0.000236
+    },
+    {
+      "date": "2024-05-08",
+      "actualPrice": 75632.45,
+      "predictedPrice": 76156.22,
+      "baseDate": "2024-05-07",
+      "basePrice": 76137.18,
+      "signal": "HOLD",
+      "predictedReturn": 0.00025
+    },
+    {
+      "date": "2024-05-09",
+      "actualPrice": 76389.91,
+      "predictedPrice": 75655.47,
+      "baseDate": "2024-05-08",
+      "basePrice": 75632.45,
+      "signal": "HOLD",
+      "predictedReturn": 0.000304
+    },
+    {
+      "date": "2024-05-10",
+      "actualPrice": 77391.13,
+      "predictedPrice": 76406.68,
+      "baseDate": "2024-05-09",
+      "basePrice": 76389.91,
+      "signal": "HOLD",
+      "predictedReturn": 0.00022
+    },
+    {
+      "date": "2024-05-13",
+      "actualPrice": 77623.24,
+      "predictedPrice": 77418.07,
+      "baseDate": "2024-05-10",
+      "basePrice": 77391.13,
+      "signal": "BUY",
+      "predictedReturn": 0.000348
+    },
+    {
+      "date": "2024-05-14",
+      "actualPrice": 77857.45,
+      "predictedPrice": 77653.68,
+      "baseDate": "2024-05-13",
+      "basePrice": 77623.24,
+      "signal": "BUY",
+      "predictedReturn": 0.000392
+    },
+    {
+      "date": "2024-05-15",
+      "actualPrice": 78126.06,
+      "predictedPrice": 77891.46,
+      "baseDate": "2024-05-14",
+      "basePrice": 77857.45,
+      "signal": "BUY",
+      "predictedReturn": 0.000437
+    },
+    {
+      "date": "2024-05-16",
+      "actualPrice": 77336.31,
+      "predictedPrice": 78157.85,
+      "baseDate": "2024-05-15",
+      "basePrice": 78126.06,
+      "signal": "BUY",
+      "predictedReturn": 0.000407
+    },
+    {
+      "date": "2024-05-17",
+      "actualPrice": 77214.96,
+      "predictedPrice": 77370.03,
+      "baseDate": "2024-05-16",
+      "basePrice": 77336.31,
+      "signal": "BUY",
+      "predictedReturn": 0.000436
+    },
+    {
+      "date": "2024-05-20",
+      "actualPrice": 77089.18,
+      "predictedPrice": 77245.99,
+      "baseDate": "2024-05-17",
+      "basePrice": 77214.96,
+      "signal": "BUY",
+      "predictedReturn": 0.000402
+    },
+    {
+      "date": "2024-05-21",
+      "actualPrice": 77460.16,
+      "predictedPrice": 77120.75,
+      "baseDate": "2024-05-20",
+      "basePrice": 77089.18,
+      "signal": "BUY",
+      "predictedReturn": 0.000409
+    },
+    {
+      "date": "2024-05-22",
+      "actualPrice": 78410.79,
+      "predictedPrice": 77491.84,
+      "baseDate": "2024-05-21",
+      "basePrice": 77460.16,
+      "signal": "BUY",
+      "predictedReturn": 0.000409
+    },
+    {
+      "date": "2024-05-23",
+      "actualPrice": 77436.57,
+      "predictedPrice": 78444.65,
+      "baseDate": "2024-05-22",
+      "basePrice": 78410.79,
+      "signal": "BUY",
+      "predictedReturn": 0.000432
+    },
+    {
+      "date": "2024-05-24",
+      "actualPrice": 77335.96,
+      "predictedPrice": 77480.11,
+      "baseDate": "2024-05-23",
+      "basePrice": 77436.57,
+      "signal": "BUY",
+      "predictedReturn": 0.000562
+    },
+    {
+      "date": "2024-05-27",
+      "actualPrice": 78738.83,
+      "predictedPrice": 77368.23,
+      "baseDate": "2024-05-24",
+      "basePrice": 77335.96,
+      "signal": "BUY",
+      "predictedReturn": 0.000417
+    },
+    {
+      "date": "2024-05-28",
+      "actualPrice": 78054.98,
+      "predictedPrice": 78770.04,
+      "baseDate": "2024-05-27",
+      "basePrice": 78738.83,
+      "signal": "BUY",
+      "predictedReturn": 0.000396
+    },
+    {
+      "date": "2024-05-29",
+      "actualPrice": 77304.05,
+      "predictedPrice": 78096.36,
+      "baseDate": "2024-05-28",
+      "basePrice": 78054.98,
+      "signal": "BUY",
+      "predictedReturn": 0.00053
+    },
+    {
+      "date": "2024-05-30",
+      "actualPrice": 77507.45,
+      "predictedPrice": 77339.57,
+      "baseDate": "2024-05-29",
+      "basePrice": 77304.05,
+      "signal": "BUY",
+      "predictedReturn": 0.000459
+    },
+    {
+      "date": "2024-05-31",
+      "actualPrice": 78312.46,
+      "predictedPrice": 77537.91,
+      "baseDate": "2024-05-30",
+      "basePrice": 77507.45,
+      "signal": "BUY",
+      "predictedReturn": 0.000393
+    },
+    {
+      "date": "2024-06-03",
+      "actualPrice": 78338.86,
+      "predictedPrice": 78343.7,
+      "baseDate": "2024-05-31",
+      "basePrice": 78312.46,
+      "signal": "BUY",
+      "predictedReturn": 0.000399
+    },
+    {
+      "date": "2024-06-04",
+      "actualPrice": 79614.11,
+      "predictedPrice": 78373.81,
+      "baseDate": "2024-06-03",
+      "basePrice": 78338.86,
+      "signal": "BUY",
+      "predictedReturn": 0.000446
+    },
+    {
+      "date": "2024-06-05",
+      "actualPrice": 80452.98,
+      "predictedPrice": 79651.1,
+      "baseDate": "2024-06-04",
+      "basePrice": 79614.11,
+      "signal": "BUY",
+      "predictedReturn": 0.000464
+    },
+    {
+      "date": "2024-06-06",
+      "actualPrice": 81286.08,
+      "predictedPrice": 80498.63,
+      "baseDate": "2024-06-05",
+      "basePrice": 80452.98,
+      "signal": "BUY",
+      "predictedReturn": 0.000567
+    },
+    {
+      "date": "2024-06-07",
+      "actualPrice": 81844.74,
+      "predictedPrice": 81335.6,
+      "baseDate": "2024-06-06",
+      "basePrice": 81286.08,
+      "signal": "BUY",
+      "predictedReturn": 0.000609
+    },
+    {
+      "date": "2024-06-10",
+      "actualPrice": 84179.89,
+      "predictedPrice": 81899.75,
+      "baseDate": "2024-06-07",
+      "basePrice": 81844.74,
+      "signal": "BUY",
+      "predictedReturn": 0.000672
+    },
+    {
+      "date": "2024-06-11",
+      "actualPrice": 83989.69,
+      "predictedPrice": 84241.54,
+      "baseDate": "2024-06-10",
+      "basePrice": 84179.89,
+      "signal": "BUY",
+      "predictedReturn": 0.000732
+    },
+    {
+      "date": "2024-06-12",
+      "actualPrice": 82010.87,
+      "predictedPrice": 84055.33,
+      "baseDate": "2024-06-11",
+      "basePrice": 83989.69,
+      "signal": "BUY",
+      "predictedReturn": 0.000781
+    },
+    {
+      "date": "2024-06-13",
+      "actualPrice": 83621.68,
+      "predictedPrice": 82073.03,
+      "baseDate": "2024-06-12",
+      "basePrice": 82010.87,
+      "signal": "BUY",
+      "predictedReturn": 0.000758
+    },
+    {
+      "date": "2024-06-14",
+      "actualPrice": 83180.29,
+      "predictedPrice": 83675.04,
+      "baseDate": "2024-06-13",
+      "basePrice": 83621.68,
+      "signal": "BUY",
+      "predictedReturn": 0.000638
+    },
+    {
+      "date": "2024-06-17",
+      "actualPrice": 83304.7,
+      "predictedPrice": 83242.82,
+      "baseDate": "2024-06-14",
+      "basePrice": 83180.29,
+      "signal": "BUY",
+      "predictedReturn": 0.000752
+    },
+    {
+      "date": "2024-06-18",
+      "actualPrice": 84641.07,
+      "predictedPrice": 83365.58,
+      "baseDate": "2024-06-17",
+      "basePrice": 83304.7,
+      "signal": "BUY",
+      "predictedReturn": 0.000731
+    },
+    {
+      "date": "2024-06-19",
+      "actualPrice": 83045.82,
+      "predictedPrice": 84708.01,
+      "baseDate": "2024-06-18",
+      "basePrice": 84641.07,
+      "signal": "BUY",
+      "predictedReturn": 0.000791
+    },
+    {
+      "date": "2024-06-20",
+      "actualPrice": 81824.18,
+      "predictedPrice": 83118.19,
+      "baseDate": "2024-06-19",
+      "basePrice": 83045.82,
+      "signal": "BUY",
+      "predictedReturn": 0.000871
+    },
+    {
+      "date": "2024-06-21",
+      "actualPrice": 80282.96,
+      "predictedPrice": 81881.26,
+      "baseDate": "2024-06-20",
+      "basePrice": 81824.18,
+      "signal": "HOLD",
+      "predictedReturn": 0.000697
+    },
+    {
+      "date": "2024-06-24",
+      "actualPrice": 79537.44,
+      "predictedPrice": 80334.91,
+      "baseDate": "2024-06-21",
+      "basePrice": 80282.96,
+      "signal": "HOLD",
+      "predictedReturn": 0.000647
+    },
+    {
+      "date": "2024-06-25",
+      "actualPrice": 79974.15,
+      "predictedPrice": 79577.81,
+      "baseDate": "2024-06-24",
+      "basePrice": 79537.44,
+      "signal": "HOLD",
+      "predictedReturn": 0.000507
+    },
+    {
+      "date": "2024-06-26",
+      "actualPrice": 80494.88,
+      "predictedPrice": 80010.27,
+      "baseDate": "2024-06-25",
+      "basePrice": 79974.15,
+      "signal": "HOLD",
+      "predictedReturn": 0.000452
+    },
+    {
+      "date": "2024-06-27",
+      "actualPrice": 80778.34,
+      "predictedPrice": 80536.75,
+      "baseDate": "2024-06-26",
+      "basePrice": 80494.88,
+      "signal": "HOLD",
+      "predictedReturn": 0.00052
+    },
+    {
+      "date": "2024-06-28",
+      "actualPrice": 79436.33,
+      "predictedPrice": 80823.06,
+      "baseDate": "2024-06-27",
+      "basePrice": 80778.34,
+      "signal": "BUY",
+      "predictedReturn": 0.000553
+    },
+    {
+      "date": "2024-07-01",
+      "actualPrice": 77279.95,
+      "predictedPrice": 79479.76,
+      "baseDate": "2024-06-28",
+      "basePrice": 79436.33,
+      "signal": "BUY",
+      "predictedReturn": 0.000547
+    },
+    {
+      "date": "2024-07-02",
+      "actualPrice": 77345.84,
+      "predictedPrice": 77314.92,
+      "baseDate": "2024-07-01",
+      "basePrice": 77279.95,
+      "signal": "HOLD",
+      "predictedReturn": 0.000452
+    },
+    {
+      "date": "2024-07-03",
+      "actualPrice": 76924.57,
+      "predictedPrice": 77368.69,
+      "baseDate": "2024-07-02",
+      "basePrice": 77345.84,
+      "signal": "HOLD",
+      "predictedReturn": 0.000295
+    },
+    {
+      "date": "2024-07-04",
+      "actualPrice": 77365.28,
+      "predictedPrice": 76948.65,
+      "baseDate": "2024-07-03",
+      "basePrice": 76924.57,
+      "signal": "HOLD",
+      "predictedReturn": 0.000313
+    },
+    {
+      "date": "2024-07-05",
+      "actualPrice": 78035.32,
+      "predictedPrice": 77386.18,
+      "baseDate": "2024-07-04",
+      "basePrice": 77365.28,
+      "signal": "HOLD",
+      "predictedReturn": 0.00027
+    },
+    {
+      "date": "2024-07-08",
+      "actualPrice": 78180.52,
+      "predictedPrice": 78061.78,
+      "baseDate": "2024-07-05",
+      "basePrice": 78035.32,
+      "signal": "HOLD",
+      "predictedReturn": 0.000339
+    },
+    {
+      "date": "2024-07-09",
+      "actualPrice": 78912.69,
+      "predictedPrice": 78206.39,
+      "baseDate": "2024-07-08",
+      "basePrice": 78180.52,
+      "signal": "HOLD",
+      "predictedReturn": 0.000331
+    },
+    {
+      "date": "2024-07-10",
+      "actualPrice": 79145.86,
+      "predictedPrice": 78938.2,
+      "baseDate": "2024-07-09",
+      "basePrice": 78912.69,
+      "signal": "HOLD",
+      "predictedReturn": 0.000323
+    },
+    {
+      "date": "2024-07-11",
+      "actualPrice": 79666.83,
+      "predictedPrice": 79173.0,
+      "baseDate": "2024-07-10",
+      "basePrice": 79145.86,
+      "signal": "BUY",
+      "predictedReturn": 0.000343
+    },
+    {
+      "date": "2024-07-12",
+      "actualPrice": 79011.8,
+      "predictedPrice": 79698.44,
+      "baseDate": "2024-07-11",
+      "basePrice": 79666.83,
+      "signal": "BUY",
+      "predictedReturn": 0.000397
+    },
+    {
+      "date": "2024-07-15",
+      "actualPrice": 78857.46,
+      "predictedPrice": 79045.52,
+      "baseDate": "2024-07-12",
+      "basePrice": 79011.8,
+      "signal": "BUY",
+      "predictedReturn": 0.000427
+    },
+    {
+      "date": "2024-07-16",
+      "actualPrice": 79059.7,
+      "predictedPrice": 78888.67,
+      "baseDate": "2024-07-15",
+      "basePrice": 78857.46,
+      "signal": "BUY",
+      "predictedReturn": 0.000396
+    },
+    {
+      "date": "2024-07-17",
+      "actualPrice": 79857.96,
+      "predictedPrice": 79093.88,
+      "baseDate": "2024-07-16",
+      "basePrice": 79059.7,
+      "signal": "BUY",
+      "predictedReturn": 0.000432
+    },
+    {
+      "date": "2024-07-18",
+      "actualPrice": 79497.43,
+      "predictedPrice": 79893.69,
+      "baseDate": "2024-07-17",
+      "basePrice": 79857.96,
+      "signal": "BUY",
+      "predictedReturn": 0.000447
+    },
+    {
+      "date": "2024-07-19",
+      "actualPrice": 80012.16,
+      "predictedPrice": 79536.58,
+      "baseDate": "2024-07-18",
+      "basePrice": 79497.43,
+      "signal": "BUY",
+      "predictedReturn": 0.000492
+    },
+    {
+      "date": "2024-07-22",
+      "actualPrice": 79773.28,
+      "predictedPrice": 80051.64,
+      "baseDate": "2024-07-19",
+      "basePrice": 80012.16,
+      "signal": "BUY",
+      "predictedReturn": 0.000493
+    },
+    {
+      "date": "2024-07-23",
+      "actualPrice": 79676.77,
+      "predictedPrice": 79812.2,
+      "baseDate": "2024-07-22",
+      "basePrice": 79773.28,
+      "signal": "BUY",
+      "predictedReturn": 0.000488
+    },
+    {
+      "date": "2024-07-24",
+      "actualPrice": 80489.95,
+      "predictedPrice": 79714.34,
+      "baseDate": "2024-07-23",
+      "basePrice": 79676.77,
+      "signal": "BUY",
+      "predictedReturn": 0.000471
+    },
+    {
+      "date": "2024-07-25",
+      "actualPrice": 78603.45,
+      "predictedPrice": 80526.3,
+      "baseDate": "2024-07-24",
+      "basePrice": 80489.95,
+      "signal": "BUY",
+      "predictedReturn": 0.000452
+    },
+    {
+      "date": "2024-07-26",
+      "actualPrice": 77405.51,
+      "predictedPrice": 78643.98,
+      "baseDate": "2024-07-25",
+      "basePrice": 78603.45,
+      "signal": "BUY",
+      "predictedReturn": 0.000516
+    },
+    {
+      "date": "2024-07-29",
+      "actualPrice": 76056.14,
+      "predictedPrice": 77430.1,
+      "baseDate": "2024-07-26",
+      "basePrice": 77405.51,
+      "signal": "BUY",
+      "predictedReturn": 0.000318
+    },
+    {
+      "date": "2024-07-30",
+      "actualPrice": 73970.65,
+      "predictedPrice": 76078.77,
+      "baseDate": "2024-07-29",
+      "basePrice": 76056.14,
+      "signal": "BUY",
+      "predictedReturn": 0.000298
+    },
+    {
+      "date": "2024-07-31",
+      "actualPrice": 73385.7,
+      "predictedPrice": 73989.09,
+      "baseDate": "2024-07-30",
+      "basePrice": 73970.65,
+      "signal": "BUY",
+      "predictedReturn": 0.000249
+    },
+    {
+      "date": "2024-08-01",
+      "actualPrice": 74063.47,
+      "predictedPrice": 73394.37,
+      "baseDate": "2024-07-31",
+      "basePrice": 73385.7,
+      "signal": "HOLD",
+      "predictedReturn": 0.000118
+    },
+    {
+      "date": "2024-08-02",
+      "actualPrice": 73825.47,
+      "predictedPrice": 74067.79,
+      "baseDate": "2024-08-01",
+      "basePrice": 74063.47,
+      "signal": "HOLD",
+      "predictedReturn": 5.8e-05
+    },
+    {
+      "date": "2024-08-05",
+      "actualPrice": 74015.7,
+      "predictedPrice": 73835.55,
+      "baseDate": "2024-08-02",
+      "basePrice": 73825.47,
+      "signal": "HOLD",
+      "predictedReturn": 0.000136
+    },
+    {
+      "date": "2024-08-06",
+      "actualPrice": 75004.48,
+      "predictedPrice": 74027.2,
+      "baseDate": "2024-08-05",
+      "basePrice": 74015.7,
+      "signal": "HOLD",
+      "predictedReturn": 0.000155
+    },
+    {
+      "date": "2024-08-07",
+      "actualPrice": 76224.28,
+      "predictedPrice": 75017.26,
+      "baseDate": "2024-08-06",
+      "basePrice": 75004.48,
+      "signal": "HOLD",
+      "predictedReturn": 0.00017
+    },
+    {
+      "date": "2024-08-08",
+      "actualPrice": 76176.3,
+      "predictedPrice": 76238.73,
+      "baseDate": "2024-08-07",
+      "basePrice": 76224.28,
+      "signal": "HOLD",
+      "predictedReturn": 0.00019
+    },
+    {
+      "date": "2024-08-09",
+      "actualPrice": 77439.23,
+      "predictedPrice": 76194.36,
+      "baseDate": "2024-08-08",
+      "basePrice": 76176.3,
+      "signal": "HOLD",
+      "predictedReturn": 0.000237
+    },
+    {
+      "date": "2024-08-12",
+      "actualPrice": 77540.39,
+      "predictedPrice": 77457.27,
+      "baseDate": "2024-08-09",
+      "basePrice": 77439.23,
+      "signal": "HOLD",
+      "predictedReturn": 0.000233
+    },
+    {
+      "date": "2024-08-13",
+      "actualPrice": 76780.46,
+      "predictedPrice": 77565.52,
+      "baseDate": "2024-08-12",
+      "basePrice": 77540.39,
+      "signal": "BUY",
+      "predictedReturn": 0.000324
+    },
+    {
+      "date": "2024-08-14",
+      "actualPrice": 76250.0,
+      "predictedPrice": 76803.38,
+      "baseDate": "2024-08-13",
+      "basePrice": 76780.46,
+      "signal": "HOLD",
+      "predictedReturn": 0.000299
+    },
+    {
+      "date": "2024-08-15",
+      "actualPrice": 74922.25,
+      "predictedPrice": 76270.7,
+      "baseDate": "2024-08-14",
+      "basePrice": 76250.0,
+      "signal": "HOLD",
+      "predictedReturn": 0.000271
+    },
+    {
+      "date": "2024-08-16",
+      "actualPrice": 74142.83,
+      "predictedPrice": 74941.45,
+      "baseDate": "2024-08-15",
+      "basePrice": 74922.25,
+      "signal": "HOLD",
+      "predictedReturn": 0.000256
+    },
+    {
+      "date": "2024-08-19",
+      "actualPrice": 73839.75,
+      "predictedPrice": 74154.72,
+      "baseDate": "2024-08-16",
+      "basePrice": 74142.83,
+      "signal": "HOLD",
+      "predictedReturn": 0.00016
+    },
+    {
+      "date": "2024-08-20",
+      "actualPrice": 74570.14,
+      "predictedPrice": 73846.9,
+      "baseDate": "2024-08-19",
+      "basePrice": 73839.75,
+      "signal": "HOLD",
+      "predictedReturn": 9.7e-05
+    },
+    {
+      "date": "2024-08-21",
+      "actualPrice": 76141.19,
+      "predictedPrice": 74578.33,
+      "baseDate": "2024-08-20",
+      "basePrice": 74570.14,
+      "signal": "HOLD",
+      "predictedReturn": 0.00011
+    },
+    {
+      "date": "2024-08-22",
+      "actualPrice": 74903.7,
+      "predictedPrice": 76156.77,
+      "baseDate": "2024-08-21",
+      "basePrice": 76141.19,
+      "signal": "HOLD",
+      "predictedReturn": 0.000204
+    },
+    {
+      "date": "2024-08-23",
+      "actualPrice": 75272.67,
+      "predictedPrice": 74926.52,
+      "baseDate": "2024-08-22",
+      "basePrice": 74903.7,
+      "signal": "HOLD",
+      "predictedReturn": 0.000305
+    },
+    {
+      "date": "2024-08-26",
+      "actualPrice": 74353.49,
+      "predictedPrice": 75278.3,
+      "baseDate": "2024-08-23",
+      "basePrice": 75272.67,
+      "signal": "HOLD",
+      "predictedReturn": 7.5e-05
+    },
+    {
+      "date": "2024-08-27",
+      "actualPrice": 74793.2,
+      "predictedPrice": 74364.25,
+      "baseDate": "2024-08-26",
+      "basePrice": 74353.49,
+      "signal": "HOLD",
+      "predictedReturn": 0.000145
+    },
+    {
+      "date": "2024-08-28",
+      "actualPrice": 74690.58,
+      "predictedPrice": 74794.75,
+      "baseDate": "2024-08-27",
+      "basePrice": 74793.2,
+      "signal": "HOLD",
+      "predictedReturn": 2.1e-05
+    },
+    {
+      "date": "2024-08-29",
+      "actualPrice": 73082.07,
+      "predictedPrice": 74698.59,
+      "baseDate": "2024-08-28",
+      "basePrice": 74690.58,
+      "signal": "HOLD",
+      "predictedReturn": 0.000107
+    },
+    {
+      "date": "2024-08-30",
+      "actualPrice": 73915.51,
+      "predictedPrice": 73090.02,
+      "baseDate": "2024-08-29",
+      "basePrice": 73082.07,
+      "signal": "HOLD",
+      "predictedReturn": 0.000109
+    },
+    {
+      "date": "2024-09-02",
+      "actualPrice": 73395.5,
+      "predictedPrice": 73915.15,
+      "baseDate": "2024-08-30",
+      "basePrice": 73915.51,
+      "signal": "HOLD",
+      "predictedReturn": -5e-06
+    },
+    {
+      "date": "2024-09-03",
+      "actualPrice": 72941.36,
+      "predictedPrice": 73402.13,
+      "baseDate": "2024-09-02",
+      "basePrice": 73395.5,
+      "signal": "HOLD",
+      "predictedReturn": 9e-05
+    },
+    {
+      "date": "2024-09-04",
+      "actualPrice": 72025.4,
+      "predictedPrice": 72945.22,
+      "baseDate": "2024-09-03",
+      "basePrice": 72941.36,
+      "signal": "HOLD",
+      "predictedReturn": 5.3e-05
+    },
+    {
+      "date": "2024-09-05",
+      "actualPrice": 71476.41,
+      "predictedPrice": 72025.12,
+      "baseDate": "2024-09-04",
+      "basePrice": 72025.4,
+      "signal": "HOLD",
+      "predictedReturn": -4e-06
+    },
+    {
+      "date": "2024-09-06",
+      "actualPrice": 71858.73,
+      "predictedPrice": 71477.96,
+      "baseDate": "2024-09-05",
+      "basePrice": 71476.41,
+      "signal": "HOLD",
+      "predictedReturn": 2.2e-05
+    },
+    {
+      "date": "2024-09-09",
+      "actualPrice": 71710.07,
+      "predictedPrice": 71859.82,
+      "baseDate": "2024-09-06",
+      "basePrice": 71858.73,
+      "signal": "HOLD",
+      "predictedReturn": 1.5e-05
+    },
+    {
+      "date": "2024-09-10",
+      "actualPrice": 72007.84,
+      "predictedPrice": 71713.17,
+      "baseDate": "2024-09-09",
+      "basePrice": 71710.07,
+      "signal": "HOLD",
+      "predictedReturn": 4.3e-05
+    },
+    {
+      "date": "2024-09-11",
+      "actualPrice": 72335.73,
+      "predictedPrice": 72008.48,
+      "baseDate": "2024-09-10",
+      "basePrice": 72007.84,
+      "signal": "HOLD",
+      "predictedReturn": 9e-06
+    },
+    {
+      "date": "2024-09-12",
+      "actualPrice": 73505.93,
+      "predictedPrice": 72335.55,
+      "baseDate": "2024-09-11",
+      "basePrice": 72335.73,
+      "signal": "HOLD",
+      "predictedReturn": -3e-06
+    },
+    {
+      "date": "2024-09-13",
+      "actualPrice": 73218.83,
+      "predictedPrice": 73510.22,
+      "baseDate": "2024-09-12",
+      "basePrice": 73505.93,
+      "signal": "HOLD",
+      "predictedReturn": 5.8e-05
+    },
+    {
+      "date": "2024-09-16",
+      "actualPrice": 71947.05,
+      "predictedPrice": 73222.43,
+      "baseDate": "2024-09-13",
+      "basePrice": 73218.83,
+      "signal": "HOLD",
+      "predictedReturn": 4.9e-05
+    },
+    {
+      "date": "2024-09-17",
+      "actualPrice": 72888.95,
+      "predictedPrice": 71949.38,
+      "baseDate": "2024-09-16",
+      "basePrice": 71947.05,
+      "signal": "HOLD",
+      "predictedReturn": 3.2e-05
+    },
+    {
+      "date": "2024-09-18",
+      "actualPrice": 72614.11,
+      "predictedPrice": 72883.55,
+      "baseDate": "2024-09-17",
+      "basePrice": 72888.95,
+      "signal": "HOLD",
+      "predictedReturn": -7.4e-05
+    },
+    {
+      "date": "2024-09-19",
+      "actualPrice": 73606.57,
+      "predictedPrice": 72613.5,
+      "baseDate": "2024-09-18",
+      "basePrice": 72614.11,
+      "signal": "HOLD",
+      "predictedReturn": -8e-06
+    },
+    {
+      "date": "2024-09-20",
+      "actualPrice": 73960.77,
+      "predictedPrice": 73607.42,
+      "baseDate": "2024-09-19",
+      "basePrice": 73606.57,
+      "signal": "HOLD",
+      "predictedReturn": 1.2e-05
+    },
+    {
+      "date": "2024-09-23",
+      "actualPrice": 73859.24,
+      "predictedPrice": 73968.45,
+      "baseDate": "2024-09-20",
+      "basePrice": 73960.77,
+      "signal": "HOLD",
+      "predictedReturn": 0.000104
+    },
+    {
+      "date": "2024-09-24",
+      "actualPrice": 74183.85,
+      "predictedPrice": 73867.83,
+      "baseDate": "2024-09-23",
+      "basePrice": 73859.24,
+      "signal": "HOLD",
+      "predictedReturn": 0.000116
+    },
+    {
+      "date": "2024-09-25",
+      "actualPrice": 75956.34,
+      "predictedPrice": 74189.67,
+      "baseDate": "2024-09-24",
+      "basePrice": 74183.85,
+      "signal": "HOLD",
+      "predictedReturn": 7.8e-05
+    },
+    {
+      "date": "2024-09-26",
+      "actualPrice": 77888.82,
+      "predictedPrice": 75964.55,
+      "baseDate": "2024-09-25",
+      "basePrice": 75956.34,
+      "signal": "HOLD",
+      "predictedReturn": 0.000108
+    },
+    {
+      "date": "2024-09-27",
+      "actualPrice": 77969.28,
+      "predictedPrice": 77901.09,
+      "baseDate": "2024-09-26",
+      "basePrice": 77888.82,
+      "signal": "HOLD",
+      "predictedReturn": 0.000158
+    },
+    {
+      "date": "2024-09-30",
+      "actualPrice": 78134.93,
+      "predictedPrice": 77986.98,
+      "baseDate": "2024-09-27",
+      "basePrice": 77969.28,
+      "signal": "HOLD",
+      "predictedReturn": 0.000227
+    },
+    {
+      "date": "2024-10-01",
+      "actualPrice": 79166.41,
+      "predictedPrice": 78154.31,
+      "baseDate": "2024-09-30",
+      "basePrice": 78134.93,
+      "signal": "HOLD",
+      "predictedReturn": 0.000248
+    },
+    {
+      "date": "2024-10-02",
+      "actualPrice": 78382.78,
+      "predictedPrice": 79182.18,
+      "baseDate": "2024-10-01",
+      "basePrice": 79166.41,
+      "signal": "HOLD",
+      "predictedReturn": 0.000199
+    },
+    {
+      "date": "2024-10-03",
+      "actualPrice": 78712.43,
+      "predictedPrice": 78402.87,
+      "baseDate": "2024-10-02",
+      "basePrice": 78382.78,
+      "signal": "HOLD",
+      "predictedReturn": 0.000256
+    },
+    {
+      "date": "2024-10-04",
+      "actualPrice": 78703.74,
+      "predictedPrice": 78730.54,
+      "baseDate": "2024-10-03",
+      "basePrice": 78712.43,
+      "signal": "HOLD",
+      "predictedReturn": 0.00023
+    },
+    {
+      "date": "2024-10-07",
+      "actualPrice": 79016.57,
+      "predictedPrice": 78729.48,
+      "baseDate": "2024-10-04",
+      "basePrice": 78703.74,
+      "signal": "BUY",
+      "predictedReturn": 0.000327
+    },
+    {
+      "date": "2024-10-08",
+      "actualPrice": 78245.96,
+      "predictedPrice": 79042.96,
+      "baseDate": "2024-10-07",
+      "basePrice": 79016.57,
+      "signal": "BUY",
+      "predictedReturn": 0.000334
+    },
+    {
+      "date": "2024-10-09",
+      "actualPrice": 76782.93,
+      "predictedPrice": 78275.0,
+      "baseDate": "2024-10-08",
+      "basePrice": 78245.96,
+      "signal": "BUY",
+      "predictedReturn": 0.000371
+    },
+    {
+      "date": "2024-10-10",
+      "actualPrice": 74911.43,
+      "predictedPrice": 76803.12,
+      "baseDate": "2024-10-09",
+      "basePrice": 76782.93,
+      "signal": "HOLD",
+      "predictedReturn": 0.000263
+    },
+    {
+      "date": "2024-10-11",
+      "actualPrice": 73928.46,
+      "predictedPrice": 74922.32,
+      "baseDate": "2024-10-10",
+      "basePrice": 74911.43,
+      "signal": "HOLD",
+      "predictedReturn": 0.000145
+    },
+    {
+      "date": "2024-10-14",
+      "actualPrice": 73537.38,
+      "predictedPrice": 73936.88,
+      "baseDate": "2024-10-11",
+      "basePrice": 73928.46,
+      "signal": "HOLD",
+      "predictedReturn": 0.000114
+    },
+    {
+      "date": "2024-10-15",
+      "actualPrice": 73293.77,
+      "predictedPrice": 73543.28,
+      "baseDate": "2024-10-14",
+      "basePrice": 73537.38,
+      "signal": "HOLD",
+      "predictedReturn": 8e-05
+    },
+    {
+      "date": "2024-10-16",
+      "actualPrice": 75032.57,
+      "predictedPrice": 73299.41,
+      "baseDate": "2024-10-15",
+      "basePrice": 73293.77,
+      "signal": "HOLD",
+      "predictedReturn": 7.7e-05
+    },
+    {
+      "date": "2024-10-17",
+      "actualPrice": 76050.25,
+      "predictedPrice": 75037.53,
+      "baseDate": "2024-10-16",
+      "basePrice": 75032.57,
+      "signal": "HOLD",
+      "predictedReturn": 6.6e-05
+    },
+    {
+      "date": "2024-10-18",
+      "actualPrice": 75192.32,
+      "predictedPrice": 76062.09,
+      "baseDate": "2024-10-17",
+      "basePrice": 76050.25,
+      "signal": "HOLD",
+      "predictedReturn": 0.000156
+    },
+    {
+      "date": "2024-10-21",
+      "actualPrice": 75521.82,
+      "predictedPrice": 75202.53,
+      "baseDate": "2024-10-18",
+      "basePrice": 75192.32,
+      "signal": "HOLD",
+      "predictedReturn": 0.000136
+    },
+    {
+      "date": "2024-10-22",
+      "actualPrice": 75168.83,
+      "predictedPrice": 75529.9,
+      "baseDate": "2024-10-21",
+      "basePrice": 75521.82,
+      "signal": "HOLD",
+      "predictedReturn": 0.000107
+    },
+    {
+      "date": "2024-10-23",
+      "actualPrice": 74927.75,
+      "predictedPrice": 75177.88,
+      "baseDate": "2024-10-22",
+      "basePrice": 75168.83,
+      "signal": "HOLD",
+      "predictedReturn": 0.00012
+    },
+    {
+      "date": "2024-10-24",
+      "actualPrice": 75109.59,
+      "predictedPrice": 74935.58,
+      "baseDate": "2024-10-23",
+      "basePrice": 74927.75,
+      "signal": "HOLD",
+      "predictedReturn": 0.000104
+    },
+    {
+      "date": "2024-10-25",
+      "actualPrice": 75684.87,
+      "predictedPrice": 75117.16,
+      "baseDate": "2024-10-24",
+      "basePrice": 75109.59,
+      "signal": "HOLD",
+      "predictedReturn": 0.000101
+    },
+    {
+      "date": "2024-10-28",
+      "actualPrice": 75392.45,
+      "predictedPrice": 75696.59,
+      "baseDate": "2024-10-25",
+      "basePrice": 75684.87,
+      "signal": "HOLD",
+      "predictedReturn": 0.000155
+    },
+    {
+      "date": "2024-10-29",
+      "actualPrice": 76376.38,
+      "predictedPrice": 75407.3,
+      "baseDate": "2024-10-28",
+      "basePrice": 75392.45,
+      "signal": "HOLD",
+      "predictedReturn": 0.000197
+    },
+    {
+      "date": "2024-10-30",
+      "actualPrice": 75351.98,
+      "predictedPrice": 76387.84,
+      "baseDate": "2024-10-29",
+      "basePrice": 76376.38,
+      "signal": "HOLD",
+      "predictedReturn": 0.00015
+    },
+    {
+      "date": "2024-10-31",
+      "actualPrice": 75372.78,
+      "predictedPrice": 75365.75,
+      "baseDate": "2024-10-30",
+      "basePrice": 75351.98,
+      "signal": "HOLD",
+      "predictedReturn": 0.000183
+    },
+    {
+      "date": "2024-11-01",
+      "actualPrice": 77774.86,
+      "predictedPrice": 75382.41,
+      "baseDate": "2024-10-31",
+      "basePrice": 75372.78,
+      "signal": "HOLD",
+      "predictedReturn": 0.000128
+    },
+    {
+      "date": "2024-11-04",
+      "actualPrice": 77998.94,
+      "predictedPrice": 77784.24,
+      "baseDate": "2024-11-01",
+      "basePrice": 77774.86,
+      "signal": "HOLD",
+      "predictedReturn": 0.000121
+    },
+    {
+      "date": "2024-11-05",
+      "actualPrice": 79367.88,
+      "predictedPrice": 78014.7,
+      "baseDate": "2024-11-04",
+      "basePrice": 77998.94,
+      "signal": "HOLD",
+      "predictedReturn": 0.000202
+    },
+    {
+      "date": "2024-11-06",
+      "actualPrice": 79470.99,
+      "predictedPrice": 79381.05,
+      "baseDate": "2024-11-05",
+      "basePrice": 79367.88,
+      "signal": "HOLD",
+      "predictedReturn": 0.000166
+    },
+    {
+      "date": "2024-11-07",
+      "actualPrice": 80042.79,
+      "predictedPrice": 79496.29,
+      "baseDate": "2024-11-06",
+      "basePrice": 79470.99,
+      "signal": "HOLD",
+      "predictedReturn": 0.000318
+    },
+    {
+      "date": "2024-11-08",
+      "actualPrice": 80004.28,
+      "predictedPrice": 80066.11,
+      "baseDate": "2024-11-07",
+      "basePrice": 80042.79,
+      "signal": "HOLD",
+      "predictedReturn": 0.000291
+    },
+    {
+      "date": "2024-11-11",
+      "actualPrice": 79856.81,
+      "predictedPrice": 80026.33,
+      "baseDate": "2024-11-08",
+      "basePrice": 80004.28,
+      "signal": "HOLD",
+      "predictedReturn": 0.000276
+    },
+    {
+      "date": "2024-11-12",
+      "actualPrice": 79129.15,
+      "predictedPrice": 79878.06,
+      "baseDate": "2024-11-11",
+      "basePrice": 79856.81,
+      "signal": "HOLD",
+      "predictedReturn": 0.000266
+    },
+    {
+      "date": "2024-11-13",
+      "actualPrice": 79554.71,
+      "predictedPrice": 79146.98,
+      "baseDate": "2024-11-12",
+      "basePrice": 79129.15,
+      "signal": "HOLD",
+      "predictedReturn": 0.000225
+    },
+    {
+      "date": "2024-11-14",
+      "actualPrice": 78761.67,
+      "predictedPrice": 79569.28,
+      "baseDate": "2024-11-13",
+      "basePrice": 79554.71,
+      "signal": "HOLD",
+      "predictedReturn": 0.000183
+    },
+    {
+      "date": "2024-11-15",
+      "actualPrice": 79409.14,
+      "predictedPrice": 78781.69,
+      "baseDate": "2024-11-14",
+      "basePrice": 78761.67,
+      "signal": "HOLD",
+      "predictedReturn": 0.000254
+    },
+    {
+      "date": "2024-11-18",
+      "actualPrice": 80466.18,
+      "predictedPrice": 79428.97,
+      "baseDate": "2024-11-15",
+      "basePrice": 79409.14,
+      "signal": "HOLD",
+      "predictedReturn": 0.00025
+    },
+    {
+      "date": "2024-11-19",
+      "actualPrice": 80837.05,
+      "predictedPrice": 80493.72,
+      "baseDate": "2024-11-18",
+      "basePrice": 80466.18,
+      "signal": "BUY",
+      "predictedReturn": 0.000342
+    },
+    {
+      "date": "2024-11-20",
+      "actualPrice": 80575.96,
+      "predictedPrice": 80868.25,
+      "baseDate": "2024-11-19",
+      "basePrice": 80837.05,
+      "signal": "BUY",
+      "predictedReturn": 0.000386
+    },
+    {
+      "date": "2024-11-21",
+      "actualPrice": 81032.31,
+      "predictedPrice": 80608.73,
+      "baseDate": "2024-11-20",
+      "basePrice": 80575.96,
+      "signal": "BUY",
+      "predictedReturn": 0.000407
+    },
+    {
+      "date": "2024-11-22",
+      "actualPrice": 80748.86,
+      "predictedPrice": 81059.22,
+      "baseDate": "2024-11-21",
+      "basePrice": 81032.31,
+      "signal": "BUY",
+      "predictedReturn": 0.000332
+    },
+    {
+      "date": "2024-11-25",
+      "actualPrice": 81676.84,
+      "predictedPrice": 80780.14,
+      "baseDate": "2024-11-22",
+      "basePrice": 80748.86,
+      "signal": "BUY",
+      "predictedReturn": 0.000387
+    },
+    {
+      "date": "2024-11-26",
+      "actualPrice": 79917.4,
+      "predictedPrice": 81705.0,
+      "baseDate": "2024-11-25",
+      "basePrice": 81676.84,
+      "signal": "BUY",
+      "predictedReturn": 0.000345
+    },
+    {
+      "date": "2024-11-27",
+      "actualPrice": 79612.11,
+      "predictedPrice": 79952.86,
+      "baseDate": "2024-11-26",
+      "basePrice": 79917.4,
+      "signal": "BUY",
+      "predictedReturn": 0.000444
+    },
+    {
+      "date": "2024-11-28",
+      "actualPrice": 77748.29,
+      "predictedPrice": 79627.25,
+      "baseDate": "2024-11-27",
+      "basePrice": 79612.11,
+      "signal": "HOLD",
+      "predictedReturn": 0.00019
+    },
+    {
+      "date": "2024-11-29",
+      "actualPrice": 76381.14,
+      "predictedPrice": 77765.73,
+      "baseDate": "2024-11-28",
+      "basePrice": 77748.29,
+      "signal": "HOLD",
+      "predictedReturn": 0.000224
+    },
+    {
+      "date": "2024-12-02",
+      "actualPrice": 77657.04,
+      "predictedPrice": 76386.78,
+      "baseDate": "2024-11-29",
+      "basePrice": 76381.14,
+      "signal": "HOLD",
+      "predictedReturn": 7.4e-05
+    },
+    {
+      "date": "2024-12-03",
+      "actualPrice": 78511.44,
+      "predictedPrice": 77668.72,
+      "baseDate": "2024-12-02",
+      "basePrice": 77657.04,
+      "signal": "HOLD",
+      "predictedReturn": 0.00015
+    },
+    {
+      "date": "2024-12-04",
+      "actualPrice": 77852.08,
+      "predictedPrice": 78530.68,
+      "baseDate": "2024-12-03",
+      "basePrice": 78511.44,
+      "signal": "HOLD",
+      "predictedReturn": 0.000245
+    },
+    {
+      "date": "2024-12-05",
+      "actualPrice": 76476.28,
+      "predictedPrice": 77874.7,
+      "baseDate": "2024-12-04",
+      "basePrice": 77852.08,
+      "signal": "HOLD",
+      "predictedReturn": 0.000291
+    },
+    {
+      "date": "2024-12-06",
+      "actualPrice": 73818.26,
+      "predictedPrice": 76493.06,
+      "baseDate": "2024-12-05",
+      "basePrice": 76476.28,
+      "signal": "HOLD",
+      "predictedReturn": 0.000219
+    },
+    {
+      "date": "2024-12-09",
+      "actualPrice": 73353.07,
+      "predictedPrice": 73829.34,
+      "baseDate": "2024-12-06",
+      "basePrice": 73818.26,
+      "signal": "HOLD",
+      "predictedReturn": 0.00015
+    },
+    {
+      "date": "2024-12-10",
+      "actualPrice": 75529.95,
+      "predictedPrice": 73355.05,
+      "baseDate": "2024-12-09",
+      "basePrice": 73353.07,
+      "signal": "HOLD",
+      "predictedReturn": 2.7e-05
+    },
+    {
+      "date": "2024-12-11",
+      "actualPrice": 75940.32,
+      "predictedPrice": 75541.27,
+      "baseDate": "2024-12-10",
+      "basePrice": 75529.95,
+      "signal": "HOLD",
+      "predictedReturn": 0.00015
+    },
+    {
+      "date": "2024-12-12",
+      "actualPrice": 75447.19,
+      "predictedPrice": 75953.56,
+      "baseDate": "2024-12-11",
+      "basePrice": 75940.32,
+      "signal": "HOLD",
+      "predictedReturn": 0.000174
+    },
+    {
+      "date": "2024-12-13",
+      "actualPrice": 75884.61,
+      "predictedPrice": 75460.55,
+      "baseDate": "2024-12-12",
+      "basePrice": 75447.19,
+      "signal": "HOLD",
+      "predictedReturn": 0.000177
+    },
+    {
+      "date": "2024-12-16",
+      "actualPrice": 74491.31,
+      "predictedPrice": 75890.64,
+      "baseDate": "2024-12-13",
+      "basePrice": 75884.61,
+      "signal": "HOLD",
+      "predictedReturn": 8e-05
+    },
+    {
+      "date": "2024-12-17",
+      "actualPrice": 74240.85,
+      "predictedPrice": 74498.25,
+      "baseDate": "2024-12-16",
+      "basePrice": 74491.31,
+      "signal": "HOLD",
+      "predictedReturn": 9.3e-05
+    },
+    {
+      "date": "2024-12-18",
+      "actualPrice": 74344.39,
+      "predictedPrice": 74247.48,
+      "baseDate": "2024-12-17",
+      "basePrice": 74240.85,
+      "signal": "HOLD",
+      "predictedReturn": 8.9e-05
+    },
+    {
+      "date": "2024-12-19",
+      "actualPrice": 74282.47,
+      "predictedPrice": 74355.87,
+      "baseDate": "2024-12-18",
+      "basePrice": 74344.39,
+      "signal": "HOLD",
+      "predictedReturn": 0.000154
+    },
+    {
+      "date": "2024-12-20",
+      "actualPrice": 75005.74,
+      "predictedPrice": 74291.99,
+      "baseDate": "2024-12-19",
+      "basePrice": 74282.47,
+      "signal": "HOLD",
+      "predictedReturn": 0.000128
+    },
+    {
+      "date": "2024-12-23",
+      "actualPrice": 75331.65,
+      "predictedPrice": 75014.96,
+      "baseDate": "2024-12-20",
+      "basePrice": 75005.74,
+      "signal": "HOLD",
+      "predictedReturn": 0.000123
+    },
+    {
+      "date": "2024-12-24",
+      "actualPrice": 75953.43,
+      "predictedPrice": 75343.23,
+      "baseDate": "2024-12-23",
+      "basePrice": 75331.65,
+      "signal": "HOLD",
+      "predictedReturn": 0.000154
+    },
+    {
+      "date": "2024-12-25",
+      "actualPrice": 75343.67,
+      "predictedPrice": 75965.57,
+      "baseDate": "2024-12-24",
+      "basePrice": 75953.43,
+      "signal": "HOLD",
+      "predictedReturn": 0.00016
+    },
+    {
+      "date": "2024-12-26",
+      "actualPrice": 76175.02,
+      "predictedPrice": 75355.1,
+      "baseDate": "2024-12-25",
+      "basePrice": 75343.67,
+      "signal": "HOLD",
+      "predictedReturn": 0.000152
+    },
+    {
+      "date": "2024-12-27",
+      "actualPrice": 77694.21,
+      "predictedPrice": 76185.06,
+      "baseDate": "2024-12-26",
+      "basePrice": 76175.02,
+      "signal": "HOLD",
+      "predictedReturn": 0.000132
+    },
+    {
+      "date": "2024-12-30",
+      "actualPrice": 76810.33,
+      "predictedPrice": 77707.65,
+      "baseDate": "2024-12-27",
+      "basePrice": 77694.21,
+      "signal": "HOLD",
+      "predictedReturn": 0.000173
+    },
+    {
+      "date": "2024-12-31",
+      "actualPrice": 76011.65,
+      "predictedPrice": 76829.61,
+      "baseDate": "2024-12-30",
+      "basePrice": 76810.33,
+      "signal": "HOLD",
+      "predictedReturn": 0.000251
+    },
+    {
+      "date": "2025-01-01",
+      "actualPrice": 77255.35,
+      "predictedPrice": 76026.04,
+      "baseDate": "2024-12-31",
+      "basePrice": 76011.65,
+      "signal": "HOLD",
+      "predictedReturn": 0.000189
+    },
+    {
+      "date": "2025-01-02",
+      "actualPrice": 77093.58,
+      "predictedPrice": 77262.72,
+      "baseDate": "2025-01-01",
+      "basePrice": 77255.35,
+      "signal": "HOLD",
+      "predictedReturn": 9.5e-05
+    },
+    {
+      "date": "2025-01-03",
+      "actualPrice": 78418.97,
+      "predictedPrice": 77107.69,
+      "baseDate": "2025-01-02",
+      "basePrice": 77093.58,
+      "signal": "HOLD",
+      "predictedReturn": 0.000183
+    },
+    {
+      "date": "2025-01-06",
+      "actualPrice": 78019.24,
+      "predictedPrice": 78431.46,
+      "baseDate": "2025-01-03",
+      "basePrice": 78418.97,
+      "signal": "HOLD",
+      "predictedReturn": 0.000159
+    },
+    {
+      "date": "2025-01-07",
+      "actualPrice": 79409.34,
+      "predictedPrice": 78037.19,
+      "baseDate": "2025-01-06",
+      "basePrice": 78019.24,
+      "signal": "HOLD",
+      "predictedReturn": 0.00023
+    },
+    {
+      "date": "2025-01-08",
+      "actualPrice": 79550.64,
+      "predictedPrice": 79424.86,
+      "baseDate": "2025-01-07",
+      "basePrice": 79409.34,
+      "signal": "HOLD",
+      "predictedReturn": 0.000195
+    },
+    {
+      "date": "2025-01-09",
+      "actualPrice": 79813.49,
+      "predictedPrice": 79572.79,
+      "baseDate": "2025-01-08",
+      "basePrice": 79550.64,
+      "signal": "BUY",
+      "predictedReturn": 0.000278
+    },
+    {
+      "date": "2025-01-10",
+      "actualPrice": 81342.54,
+      "predictedPrice": 79835.26,
+      "baseDate": "2025-01-09",
+      "basePrice": 79813.49,
+      "signal": "BUY",
+      "predictedReturn": 0.000273
+    },
+    {
+      "date": "2025-01-13",
+      "actualPrice": 81006.38,
+      "predictedPrice": 81361.09,
+      "baseDate": "2025-01-10",
+      "basePrice": 81342.54,
+      "signal": "HOLD",
+      "predictedReturn": 0.000228
+    },
+    {
+      "date": "2025-01-14",
+      "actualPrice": 80112.71,
+      "predictedPrice": 81032.56,
+      "baseDate": "2025-01-13",
+      "basePrice": 81006.38,
+      "signal": "BUY",
+      "predictedReturn": 0.000323
+    },
+    {
+      "date": "2025-01-15",
+      "actualPrice": 79698.57,
+      "predictedPrice": 80139.81,
+      "baseDate": "2025-01-14",
+      "basePrice": 80112.71,
+      "signal": "BUY",
+      "predictedReturn": 0.000338
+    },
+    {
+      "date": "2025-01-16",
+      "actualPrice": 80148.38,
+      "predictedPrice": 79714.38,
+      "baseDate": "2025-01-15",
+      "basePrice": 79698.57,
+      "signal": "HOLD",
+      "predictedReturn": 0.000198
+    },
+    {
+      "date": "2025-01-17",
+      "actualPrice": 78672.26,
+      "predictedPrice": 80162.09,
+      "baseDate": "2025-01-16",
+      "basePrice": 80148.38,
+      "signal": "HOLD",
+      "predictedReturn": 0.000171
+    },
+    {
+      "date": "2025-01-20",
+      "actualPrice": 79292.24,
+      "predictedPrice": 78690.65,
+      "baseDate": "2025-01-17",
+      "basePrice": 78672.26,
+      "signal": "HOLD",
+      "predictedReturn": 0.000234
+    },
+    {
+      "date": "2025-01-21",
+      "actualPrice": 78797.01,
+      "predictedPrice": 79301.78,
+      "baseDate": "2025-01-20",
+      "basePrice": 79292.24,
+      "signal": "HOLD",
+      "predictedReturn": 0.00012
+    },
+    {
+      "date": "2025-01-22",
+      "actualPrice": 79905.82,
+      "predictedPrice": 78812.77,
+      "baseDate": "2025-01-21",
+      "basePrice": 78797.01,
+      "signal": "HOLD",
+      "predictedReturn": 0.0002
+    },
+    {
+      "date": "2025-01-23",
+      "actualPrice": 77658.23,
+      "predictedPrice": 79917.93,
+      "baseDate": "2025-01-22",
+      "basePrice": 79905.82,
+      "signal": "HOLD",
+      "predictedReturn": 0.000152
+    },
+    {
+      "date": "2025-01-24",
+      "actualPrice": 76944.08,
+      "predictedPrice": 77680.82,
+      "baseDate": "2025-01-23",
+      "basePrice": 77658.23,
+      "signal": "HOLD",
+      "predictedReturn": 0.000291
+    },
+    {
+      "date": "2025-01-27",
+      "actualPrice": 75417.65,
+      "predictedPrice": 76953.2,
+      "baseDate": "2025-01-24",
+      "basePrice": 76944.08,
+      "signal": "HOLD",
+      "predictedReturn": 0.000119
+    },
+    {
+      "date": "2025-01-28",
+      "actualPrice": 74688.52,
+      "predictedPrice": 75426.89,
+      "baseDate": "2025-01-27",
+      "basePrice": 75417.65,
+      "signal": "HOLD",
+      "predictedReturn": 0.000122
+    },
+    {
+      "date": "2025-01-29",
+      "actualPrice": 74925.81,
+      "predictedPrice": 74693.52,
+      "baseDate": "2025-01-28",
+      "basePrice": 74688.52,
+      "signal": "HOLD",
+      "predictedReturn": 6.7e-05
+    },
+    {
+      "date": "2025-01-30",
+      "actualPrice": 74779.8,
+      "predictedPrice": 74929.24,
+      "baseDate": "2025-01-29",
+      "basePrice": 74925.81,
+      "signal": "HOLD",
+      "predictedReturn": 4.6e-05
+    },
+    {
+      "date": "2025-01-31",
+      "actualPrice": 74567.69,
+      "predictedPrice": 74790.17,
+      "baseDate": "2025-01-30",
+      "basePrice": 74779.8,
+      "signal": "HOLD",
+      "predictedReturn": 0.000139
+    },
+    {
+      "date": "2025-02-03",
+      "actualPrice": 74440.27,
+      "predictedPrice": 74578.9,
+      "baseDate": "2025-01-31",
+      "basePrice": 74567.69,
+      "signal": "HOLD",
+      "predictedReturn": 0.00015
+    },
+    {
+      "date": "2025-02-04",
+      "actualPrice": 74637.1,
+      "predictedPrice": 74449.01,
+      "baseDate": "2025-02-03",
+      "basePrice": 74440.27,
+      "signal": "HOLD",
+      "predictedReturn": 0.000117
+    },
+    {
+      "date": "2025-02-05",
+      "actualPrice": 73754.0,
+      "predictedPrice": 74647.11,
+      "baseDate": "2025-02-04",
+      "basePrice": 74637.1,
+      "signal": "HOLD",
+      "predictedReturn": 0.000134
+    },
+    {
+      "date": "2025-02-06",
+      "actualPrice": 74397.14,
+      "predictedPrice": 73765.39,
+      "baseDate": "2025-02-05",
+      "basePrice": 73754.0,
+      "signal": "HOLD",
+      "predictedReturn": 0.000154
+    },
+    {
+      "date": "2025-02-07",
+      "actualPrice": 75006.1,
+      "predictedPrice": 74409.39,
+      "baseDate": "2025-02-06",
+      "basePrice": 74397.14,
+      "signal": "HOLD",
+      "predictedReturn": 0.000165
+    },
+    {
+      "date": "2025-02-10",
+      "actualPrice": 75368.53,
+      "predictedPrice": 75016.05,
+      "baseDate": "2025-02-07",
+      "basePrice": 75006.1,
+      "signal": "HOLD",
+      "predictedReturn": 0.000133
+    },
+    {
+      "date": "2025-02-11",
+      "actualPrice": 75888.73,
+      "predictedPrice": 75380.23,
+      "baseDate": "2025-02-10",
+      "basePrice": 75368.53,
+      "signal": "HOLD",
+      "predictedReturn": 0.000155
+    },
+    {
+      "date": "2025-02-12",
+      "actualPrice": 76174.39,
+      "predictedPrice": 75900.14,
+      "baseDate": "2025-02-11",
+      "basePrice": 75888.73,
+      "signal": "HOLD",
+      "predictedReturn": 0.00015
+    },
+    {
+      "date": "2025-02-13",
+      "actualPrice": 78073.15,
+      "predictedPrice": 76184.28,
+      "baseDate": "2025-02-12",
+      "basePrice": 76174.39,
+      "signal": "HOLD",
+      "predictedReturn": 0.00013
+    },
+    {
+      "date": "2025-02-14",
+      "actualPrice": 78007.19,
+      "predictedPrice": 78078.63,
+      "baseDate": "2025-02-13",
+      "basePrice": 78073.15,
+      "signal": "HOLD",
+      "predictedReturn": 7e-05
+    },
+    {
+      "date": "2025-02-17",
+      "actualPrice": 77735.81,
+      "predictedPrice": 78026.6,
+      "baseDate": "2025-02-14",
+      "basePrice": 78007.19,
+      "signal": "HOLD",
+      "predictedReturn": 0.000249
+    },
+    {
+      "date": "2025-02-18",
+      "actualPrice": 77051.47,
+      "predictedPrice": 77753.58,
+      "baseDate": "2025-02-17",
+      "basePrice": 77735.81,
+      "signal": "HOLD",
+      "predictedReturn": 0.000229
+    },
+    {
+      "date": "2025-02-19",
+      "actualPrice": 76118.13,
+      "predictedPrice": 77066.81,
+      "baseDate": "2025-02-18",
+      "basePrice": 77051.47,
+      "signal": "HOLD",
+      "predictedReturn": 0.000199
+    },
+    {
+      "date": "2025-02-20",
+      "actualPrice": 75004.85,
+      "predictedPrice": 76126.62,
+      "baseDate": "2025-02-19",
+      "basePrice": 76118.13,
+      "signal": "HOLD",
+      "predictedReturn": 0.000111
+    },
+    {
+      "date": "2025-02-21",
+      "actualPrice": 74223.99,
+      "predictedPrice": 75009.34,
+      "baseDate": "2025-02-20",
+      "basePrice": 75004.85,
+      "signal": "HOLD",
+      "predictedReturn": 6e-05
+    },
+    {
+      "date": "2025-02-24",
+      "actualPrice": 74175.89,
+      "predictedPrice": 74227.59,
+      "baseDate": "2025-02-21",
+      "basePrice": 74223.99,
+      "signal": "HOLD",
+      "predictedReturn": 4.8e-05
+    },
+    {
+      "date": "2025-02-25",
+      "actualPrice": 74488.94,
+      "predictedPrice": 74182.14,
+      "baseDate": "2025-02-24",
+      "basePrice": 74175.89,
+      "signal": "HOLD",
+      "predictedReturn": 8.4e-05
+    },
+    {
+      "date": "2025-02-26",
+      "actualPrice": 74549.58,
+      "predictedPrice": 74496.91,
+      "baseDate": "2025-02-25",
+      "basePrice": 74488.94,
+      "signal": "HOLD",
+      "predictedReturn": 0.000107
+    },
+    {
+      "date": "2025-02-27",
+      "actualPrice": 73882.64,
+      "predictedPrice": 74563.87,
+      "baseDate": "2025-02-26",
+      "basePrice": 74549.58,
+      "signal": "HOLD",
+      "predictedReturn": 0.000192
+    },
+    {
+      "date": "2025-02-28",
+      "actualPrice": 74700.01,
+      "predictedPrice": 73895.86,
+      "baseDate": "2025-02-27",
+      "basePrice": 73882.64,
+      "signal": "HOLD",
+      "predictedReturn": 0.000179
+    },
+    {
+      "date": "2025-03-03",
+      "actualPrice": 75380.84,
+      "predictedPrice": 74708.12,
+      "baseDate": "2025-02-28",
+      "basePrice": 74700.01,
+      "signal": "HOLD",
+      "predictedReturn": 0.000109
+    },
+    {
+      "date": "2025-03-04",
+      "actualPrice": 75251.61,
+      "predictedPrice": 75391.39,
+      "baseDate": "2025-03-03",
+      "basePrice": 75380.84,
+      "signal": "HOLD",
+      "predictedReturn": 0.00014
+    },
+    {
+      "date": "2025-03-05",
+      "actualPrice": 74903.3,
+      "predictedPrice": 75264.09,
+      "baseDate": "2025-03-04",
+      "basePrice": 75251.61,
+      "signal": "HOLD",
+      "predictedReturn": 0.000166
+    },
+    {
+      "date": "2025-03-06",
+      "actualPrice": 75412.95,
+      "predictedPrice": 74915.85,
+      "baseDate": "2025-03-05",
+      "basePrice": 74903.3,
+      "signal": "HOLD",
+      "predictedReturn": 0.000168
+    },
+    {
+      "date": "2025-03-07",
+      "actualPrice": 75598.37,
+      "predictedPrice": 75420.96,
+      "baseDate": "2025-03-06",
+      "basePrice": 75412.95,
+      "signal": "HOLD",
+      "predictedReturn": 0.000106
+    },
+    {
+      "date": "2025-03-10",
+      "actualPrice": 74310.87,
+      "predictedPrice": 75612.01,
+      "baseDate": "2025-03-07",
+      "basePrice": 75598.37,
+      "signal": "HOLD",
+      "predictedReturn": 0.00018
+    },
+    {
+      "date": "2025-03-11",
+      "actualPrice": 74265.12,
+      "predictedPrice": 74326.55,
+      "baseDate": "2025-03-10",
+      "basePrice": 74310.87,
+      "signal": "HOLD",
+      "predictedReturn": 0.000211
+    },
+    {
+      "date": "2025-03-12",
+      "actualPrice": 74513.91,
+      "predictedPrice": 74271.97,
+      "baseDate": "2025-03-11",
+      "basePrice": 74265.12,
+      "signal": "HOLD",
+      "predictedReturn": 9.2e-05
+    },
+    {
+      "date": "2025-03-13",
+      "actualPrice": 73728.51,
+      "predictedPrice": 74523.9,
+      "baseDate": "2025-03-12",
+      "basePrice": 74513.91,
+      "signal": "HOLD",
+      "predictedReturn": 0.000134
+    },
+    {
+      "date": "2025-03-14",
+      "actualPrice": 73911.44,
+      "predictedPrice": 73738.2,
+      "baseDate": "2025-03-13",
+      "basePrice": 73728.51,
+      "signal": "HOLD",
+      "predictedReturn": 0.000131
+    },
+    {
+      "date": "2025-03-17",
+      "actualPrice": 72646.83,
+      "predictedPrice": 73919.24,
+      "baseDate": "2025-03-14",
+      "basePrice": 73911.44,
+      "signal": "HOLD",
+      "predictedReturn": 0.000106
+    },
+    {
+      "date": "2025-03-18",
+      "actualPrice": 73835.82,
+      "predictedPrice": 72658.64,
+      "baseDate": "2025-03-17",
+      "basePrice": 72646.83,
+      "signal": "HOLD",
+      "predictedReturn": 0.000162
+    },
+    {
+      "date": "2025-03-19",
+      "actualPrice": 74964.85,
+      "predictedPrice": 73841.28,
+      "baseDate": "2025-03-18",
+      "basePrice": 73835.82,
+      "signal": "HOLD",
+      "predictedReturn": 7.4e-05
+    },
+    {
+      "date": "2025-03-20",
+      "actualPrice": 74752.99,
+      "predictedPrice": 74970.65,
+      "baseDate": "2025-03-19",
+      "basePrice": 74964.85,
+      "signal": "HOLD",
+      "predictedReturn": 7.7e-05
+    },
+    {
+      "date": "2025-03-21",
+      "actualPrice": 75094.75,
+      "predictedPrice": 74762.39,
+      "baseDate": "2025-03-20",
+      "basePrice": 74752.99,
+      "signal": "HOLD",
+      "predictedReturn": 0.000126
+    },
+    {
+      "date": "2025-03-24",
+      "actualPrice": 72968.77,
+      "predictedPrice": 75099.57,
+      "baseDate": "2025-03-21",
+      "basePrice": 75094.75,
+      "signal": "HOLD",
+      "predictedReturn": 6.4e-05
+    },
+    {
+      "date": "2025-03-25",
+      "actualPrice": 71977.63,
+      "predictedPrice": 72975.78,
+      "baseDate": "2025-03-24",
+      "basePrice": 72968.77,
+      "signal": "HOLD",
+      "predictedReturn": 9.6e-05
+    },
+    {
+      "date": "2025-03-26",
+      "actualPrice": 71738.68,
+      "predictedPrice": 71973.96,
+      "baseDate": "2025-03-25",
+      "basePrice": 71977.63,
+      "signal": "HOLD",
+      "predictedReturn": -5.1e-05
+    },
+    {
+      "date": "2025-03-27",
+      "actualPrice": 70835.8,
+      "predictedPrice": 71738.73,
+      "baseDate": "2025-03-26",
+      "basePrice": 71738.68,
+      "signal": "HOLD",
+      "predictedReturn": 1e-06
+    },
+    {
+      "date": "2025-03-28",
+      "actualPrice": 71459.95,
+      "predictedPrice": 70832.25,
+      "baseDate": "2025-03-27",
+      "basePrice": 70835.8,
+      "signal": "HOLD",
+      "predictedReturn": -5e-05
+    },
+    {
+      "date": "2025-03-31",
+      "actualPrice": 73208.0,
+      "predictedPrice": 71453.27,
+      "baseDate": "2025-03-28",
+      "basePrice": 71459.95,
+      "signal": "HOLD",
+      "predictedReturn": -9.4e-05
+    },
+    {
+      "date": "2025-04-01",
+      "actualPrice": 72196.05,
+      "predictedPrice": 73206.14,
+      "baseDate": "2025-03-31",
+      "basePrice": 73208.0,
+      "signal": "HOLD",
+      "predictedReturn": -2.5e-05
+    },
+    {
+      "date": "2025-04-02",
+      "actualPrice": 71488.45,
+      "predictedPrice": 72197.45,
+      "baseDate": "2025-04-01",
+      "basePrice": 72196.05,
+      "signal": "HOLD",
+      "predictedReturn": 1.9e-05
+    },
+    {
+      "date": "2025-04-03",
+      "actualPrice": 71705.05,
+      "predictedPrice": 71480.61,
+      "baseDate": "2025-04-02",
+      "basePrice": 71488.45,
+      "signal": "HOLD",
+      "predictedReturn": -0.00011
+    },
+    {
+      "date": "2025-04-04",
+      "actualPrice": 73119.46,
+      "predictedPrice": 71697.42,
+      "baseDate": "2025-04-03",
+      "basePrice": 71705.05,
+      "signal": "HOLD",
+      "predictedReturn": -0.000106
+    },
+    {
+      "date": "2025-04-07",
+      "actualPrice": 72069.15,
+      "predictedPrice": 73112.37,
+      "baseDate": "2025-04-04",
+      "basePrice": 73119.46,
+      "signal": "HOLD",
+      "predictedReturn": -9.7e-05
+    },
+    {
+      "date": "2025-04-08",
+      "actualPrice": 72299.31,
+      "predictedPrice": 72065.96,
+      "baseDate": "2025-04-07",
+      "basePrice": 72069.15,
+      "signal": "HOLD",
+      "predictedReturn": -4.4e-05
+    },
+    {
+      "date": "2025-04-09",
+      "actualPrice": 73911.63,
+      "predictedPrice": 72295.2,
+      "baseDate": "2025-04-08",
+      "basePrice": 72299.31,
+      "signal": "HOLD",
+      "predictedReturn": -5.7e-05
+    },
+    {
+      "date": "2025-04-10",
+      "actualPrice": 72475.53,
+      "predictedPrice": 73904.27,
+      "baseDate": "2025-04-09",
+      "basePrice": 73911.63,
+      "signal": "HOLD",
+      "predictedReturn": -0.0001
+    },
+    {
+      "date": "2025-04-11",
+      "actualPrice": 71384.17,
+      "predictedPrice": 72478.81,
+      "baseDate": "2025-04-10",
+      "basePrice": 72475.53,
+      "signal": "HOLD",
+      "predictedReturn": 4.5e-05
+    },
+    {
+      "date": "2025-04-14",
+      "actualPrice": 71036.44,
+      "predictedPrice": 71383.38,
+      "baseDate": "2025-04-11",
+      "basePrice": 71384.17,
+      "signal": "HOLD",
+      "predictedReturn": -1.1e-05
+    },
+    {
+      "date": "2025-04-15",
+      "actualPrice": 70608.17,
+      "predictedPrice": 71031.77,
+      "baseDate": "2025-04-14",
+      "basePrice": 71036.44,
+      "signal": "HOLD",
+      "predictedReturn": -6.6e-05
+    },
+    {
+      "date": "2025-04-16",
+      "actualPrice": 71314.31,
+      "predictedPrice": 70601.27,
+      "baseDate": "2025-04-15",
+      "basePrice": 70608.17,
+      "signal": "HOLD",
+      "predictedReturn": -9.8e-05
+    },
+    {
+      "date": "2025-04-17",
+      "actualPrice": 71535.73,
+      "predictedPrice": 71306.51,
+      "baseDate": "2025-04-16",
+      "basePrice": 71314.31,
+      "signal": "HOLD",
+      "predictedReturn": -0.000109
+    },
+    {
+      "date": "2025-04-18",
+      "actualPrice": 70042.17,
+      "predictedPrice": 71531.03,
+      "baseDate": "2025-04-17",
+      "basePrice": 71535.73,
+      "signal": "HOLD",
+      "predictedReturn": -6.6e-05
+    }
+  ],
+  "latestSignal": {
+    "date": "2025-04-17",
+    "signal": "HOLD",
+    "entryPrice": 71535.73,
+    "stopLoss": null,
+    "target": null,
+    "predictedReturn": -6.6e-05
+  },
+  "signalCounts": {
+    "HOLD": 201,
+    "BUY": 77
+  },
+  "backtestComparison": {
+    "total_return_pct": {
+      "strategy": -15.790090348891495,
+      "buyAndHold": -4.45647439809374
+    },
+    "sharpe_ratio": {
+      "strategy": -1.7116129723298747,
+      "buyAndHold": -0.1423674649114735
+    },
+    "max_drawdown_pct": {
+      "strategy": 19.613884911737497,
+      "buyAndHold": 16.5792992259677
+    },
+    "win_rate_pct": {
+      "strategy": 30.76923076923077,
+      "buyAndHold": null
+    },
+    "profit_factor": {
+      "strategy": 0.3671457967767803,
+      "buyAndHold": null
+    },
+    "total_trades": {
+      "strategy": 13.0,
+      "buyAndHold": 1.0
+    },
+    "total_fees_paid": {
+      "strategy": 7252.716713575144,
+      "buyAndHold": 299.9100269918563
+    },
+    "avg_margin_pct_of_capital": {
+      "strategy": 0.039573266012635305,
+      "buyAndHold": 0.15321030483745024
+    },
+    "max_margin_pct_of_capital": {
+      "strategy": 0.15657066747539408,
+      "buyAndHold": 0.16957062877290272
+    }
+  }
+}

@@ -18,13 +18,32 @@ Each run does 4 things:
   3. PREDICT — refits ARIMA + XGBoost + the meta-learner on all resolved
      history and produces today's live BUY/SELL/HOLD signal
      (signals/live_predict.generate_live_signal), logged at INFO.
-  4. ALERT ON FAILURE — any exception, or data that's suspiciously stale
+  4. PERSIST — today's live signal is upserted into the `live_signals`
+     table (data/db.py) so it's queryable after the fact, not just visible
+     in the moment via the log line.
+  5. HEARTBEAT — a small JSON status file (path: settings.eod_heartbeat_path,
+     default logs/heartbeat.json) is written at every exit path of run_once
+     (success, no-data/holiday, or error) with a timestamp, status, and
+     message. check_heartbeat.py reads this on its own separate cron
+     schedule to catch the case this job's own alerting can't: the process
+     never running at all, or dying before it gets a chance to alert.
+  6. ALERT ON FAILURE — any exception, or data that's suspiciously stale
      (see is_stale() below), is logged at CRITICAL and, if
      ALERT_WEBHOOK_URL is set in .env, POSTed to that Slack-compatible
      incoming-webhook URL. Never fails silently: a bad run always either
      raises (visible to cron's exit code / your terminal) or is logged
      loud enough to find, and it never upserts partial/garbled rows since
      fetch_latest_eod() itself either returns a clean row or raises.
+
+Startup guard
+-------------
+run_once() refuses to run (logs CRITICAL, alerts, raises) if
+settings.mysql_password_is_placeholder is True -- i.e. .env was never
+actually filled in with a real MySQL password. This is deliberately loud
+and fatal rather than a warning: a job silently failing every single
+MySQL call because of an unfilled placeholder is exactly the kind of
+"worked in dev, silently broken in prod" gap this project's own docs
+(EOD_JOB.md) flagged.
 
 Run modes
 ---------
@@ -49,6 +68,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import logging
 import logging.handlers
 import os
@@ -58,11 +78,13 @@ from pathlib import Path
 import pandas as pd
 
 from config.settings import settings
+from data.db import live_signal_to_row, upsert_live_signal
 from data.kite_fetcher import fetch_latest_eod
 from signals.live_predict import generate_live_signal
 
 LOG_DIR = Path(__file__).parent / "logs"
-MAX_STALE_CALENDAR_DAYS = 4  # weekend + 1 holiday, generous on purpose
+MAX_STALE_CALENDAR_DAYS = settings.eod_max_stale_calendar_days  # weekend + 1 holiday, generous on purpose
+HEARTBEAT_PATH = Path(settings.eod_heartbeat_path)
 
 
 def setup_logging() -> logging.Logger:
@@ -112,6 +134,28 @@ def send_alert(message: str) -> None:
         logger.warning(f"Couldn't deliver alert to webhook (job failure above is still logged): {e}")
 
 
+def write_heartbeat(status: str, message: str) -> None:
+    """
+    Writes a small JSON status file after every run_once() exit path
+    (success / no-data / error), for check_heartbeat.py's independent
+    dead-man's-switch check to read. Deliberately best-effort: a failure to
+    write the heartbeat file must never itself crash the job or mask the
+    real result being reported.
+
+    status: 'ok' | 'no_data' | 'error'
+    """
+    try:
+        HEARTBEAT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "status": status,
+            "message": message,
+            "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
+        }
+        HEARTBEAT_PATH.write_text(json.dumps(payload, indent=2))
+    except Exception as e:
+        logger.warning(f"Couldn't write heartbeat file at {HEARTBEAT_PATH}: {e}")
+
+
 def is_stale(latest_date: pd.Timestamp, today: dt.date) -> bool:
     """True if the newest row we have is suspiciously old given `today` --
     more than MAX_STALE_CALENDAR_DAYS calendar days back. A couple of days
@@ -125,10 +169,22 @@ def run_once(commodity: str | None = None) -> None:
     commodity = commodity or settings.mcx_commodity
     logger.info(f"=== EOD job start ({commodity}) ===")
 
+    if settings.mysql_password_is_placeholder:
+        msg = (
+            "MYSQL_PASSWORD in .env is still an unfilled placeholder value -- "
+            "refusing to run rather than fail every MySQL call. Set a real "
+            "password in .env before running the EOD job."
+        )
+        send_alert(msg)
+        write_heartbeat("error", msg)
+        raise RuntimeError(msg)
+
     try:
         hist = fetch_latest_eod(commodity)
     except Exception as e:
-        send_alert(f"fetch_latest_eod({commodity}) raised: {e!r}")
+        msg = f"fetch_latest_eod({commodity}) raised: {e!r}"
+        send_alert(msg)
+        write_heartbeat("error", msg)
         raise
 
     today = dt.date.today()
@@ -144,27 +200,35 @@ def run_once(commodity: str | None = None) -> None:
         if "contract" in stored.columns:
             stored = stored[stored["contract"].str.startswith(commodity)]
         if stored.empty:
-            send_alert(f"No stored {commodity} data at all AND today's fetch was empty -- "
-                       f"nothing to fall back on, needs investigation.")
+            msg = (f"No stored {commodity} data at all AND today's fetch was empty -- "
+                   f"nothing to fall back on, needs investigation.")
+            send_alert(msg)
+            write_heartbeat("error", msg)
             return
         latest_stored = stored.index.max()
         if is_stale(latest_stored, today):
-            send_alert(
+            msg = (
                 f"No new {commodity} row today AND the newest stored row is from "
                 f"{latest_stored.date()} ({(today - latest_stored.date()).days} calendar days "
                 f"ago) -- looks stale, not just a holiday. Check Kite auth / API status."
             )
+            send_alert(msg)
+            write_heartbeat("error", msg)
         else:
-            logger.info(f"Newest stored row is {latest_stored.date()} -- within normal range, no alert.")
+            msg = f"Newest stored row is {latest_stored.date()} -- within normal range, no alert."
+            logger.info(msg)
+            write_heartbeat("no_data", msg)
         return
 
     latest_date = hist.index.max()
     if is_stale(latest_date, today):
-        send_alert(
+        msg = (
             f"fetch_latest_eod({commodity}) returned a row but it's dated {latest_date.date()}, "
             f"{(today - latest_date.date()).days} calendar days old -- looks stale rather than "
             f"today's actual close. Not treating this as a clean update."
         )
+        send_alert(msg)
+        write_heartbeat("error", msg)
         return
 
     logger.info(f"New row upserted for {latest_date.date()}.")
@@ -184,9 +248,26 @@ def run_once(commodity: str | None = None) -> None:
         # the series -- the row is already safely upserted above. Alert,
         # don't re-raise, so cron doesn't treat "today's data is fine but
         # prediction broke" as a Kite/data outage.
-        send_alert(f"New {commodity} row upserted OK but generate_live_signal() failed: {e!r}")
+        msg = f"New {commodity} row upserted OK but generate_live_signal() failed: {e!r}"
+        send_alert(msg)
+        write_heartbeat("error", msg)
         return
 
+    try:
+        row = live_signal_to_row(live, commodity=commodity)
+        upsert_live_signal(row)
+        logger.info(f"Live signal for {live.date.date()} persisted to live_signals table.")
+    except Exception as e:
+        # The signal was generated fine and is already logged above -- a
+        # persistence failure shouldn't be reported as if the prediction
+        # itself failed, but it's still worth an alert since the UI/anyone
+        # reading live_signals will miss today's row otherwise.
+        msg = f"Live signal generated OK but upsert_live_signal() failed: {e!r}"
+        send_alert(msg)
+        write_heartbeat("error", msg)
+        return
+
+    write_heartbeat("ok", f"{commodity} {live.date.date()}: {live.signal}")
     logger.info(f"=== EOD job done ({commodity}) ===")
 
 

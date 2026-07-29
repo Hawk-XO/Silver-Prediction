@@ -96,6 +96,7 @@ class RunResult:
     price_series: Optional[pd.Series] = None    # mcx_close over model_ready's range, for the price chart
     trade_markers: Optional[pd.DataFrame] = None  # non-HOLD rows (signal, entry_price), for BUY/SELL markers
     position_series: Optional[pd.Series] = None  # 1=long, -1=short, 0=flat, per day -- for chart background shading
+    orders: list = field(default_factory=list)    # broker.get_orders() -- paper order log, for the market-sim UI
 
 
 def run_pipeline(
@@ -278,6 +279,7 @@ def run_pipeline(
         price_series=model_ready["mcx_close"] if "mcx_close" in model_ready.columns else None,
         trade_markers=signals_df[signals_df["signal"] != "HOLD"][["signal", "entry_price"]].copy(),
         position_series=signals_to_position(signals_df["signal"]),
+        orders=broker.get_orders(),
     )
 
 

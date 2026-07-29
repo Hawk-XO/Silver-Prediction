@@ -38,8 +38,24 @@ from kiteconnect import KiteConnect
 from config.settings import settings
 from data.contract_roll import build_continuous_series
 from data.db import upsert_ohlcv, get_engine
+from data.retry import retry_with_backoff
 
 MCX_EXCHANGE = "MCX"
+
+
+@retry_with_backoff(attempts=3, initial_delay=1.0, backoff_factor=2.0)
+def _kite_instruments(kite: KiteConnect, exchange: str):
+    """Retry-wrapped kite.instruments() -- transient network blips shouldn't
+    take down a contract lookup that would otherwise succeed on retry."""
+    return kite.instruments(exchange)
+
+
+@retry_with_backoff(attempts=3, initial_delay=1.0, backoff_factor=2.0)
+def _kite_historical_data(kite: KiteConnect, **kwargs):
+    """Retry-wrapped kite.historical_data() -- same rationale as
+    _kite_instruments() above; this is the call made once per contract per
+    fetch, so it's the one most exposed to a flaky connection."""
+    return kite.historical_data(**kwargs)
 
 
 def _get_client() -> KiteConnect:
@@ -62,7 +78,7 @@ def list_contracts(commodity: str, kite: KiteConnect | None = None) -> pd.DataFr
     fetch historical data for it.
     """
     kite = kite or _get_client()
-    instruments = pd.DataFrame(kite.instruments(MCX_EXCHANGE))
+    instruments = pd.DataFrame(_kite_instruments(kite, MCX_EXCHANGE))
 
     if instruments.empty:
         raise RuntimeError("Kite returned no MCX instruments — check API access / market hours.")
@@ -100,7 +116,8 @@ def fetch_contract_history(
     are large enough for our multi-year use case in one shot).
     """
     kite = kite or _get_client()
-    raw = kite.historical_data(
+    raw = _kite_historical_data(
+        kite,
         instrument_token=instrument_token,
         from_date=from_date,
         to_date=to_date,

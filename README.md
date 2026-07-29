@@ -16,6 +16,30 @@ source venv/bin/activate      # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+## Streamlit UI
+
+```bash
+streamlit run ui/app.py
+```
+
+A three-screen multipage app:
+
+- **Start** (`ui/pages/1_menu.py`) — checks stored data freshness (fetches
+  any missing days via Kite, falling back to the COMEX+USDINR proxy) before
+  either downstream screen runs, then routes you onward.
+- **Predictor** (`ui/pages/2_predictor.py`) — configure model
+  hyperparameters and run a full walk-forward backtest: Sharpe, drawdown,
+  win rate, strategy vs buy-and-hold, PDF export.
+- **Market Simulator** (`ui/pages/3_market_sim.py`) — the same real-data
+  pipeline, replayed as a paper-trading order log (`PaperKiteBroker`, see
+  `broker/kite_paper_broker.py`): equity curve, fill-by-fill order table,
+  running paper P&L. Simulated only — no real orders are ever sent.
+
+`ui/pipeline_runner.py` and `ui/market_sim_runner.py` hold all the actual
+pipeline logic; the pages themselves are just widgets wired to those two
+modules, so the pipeline can be smoke-tested from plain Python/pytest
+without starting Streamlit.
+
 ## Project Structure
 
 ```
@@ -24,6 +48,7 @@ features/   # indicators, rolling stats, leakage-safe target construction
 models/     # ARIMA, XGBoost, LSTM, stacking meta-learner
 backtest/   # walk-forward harness, vectorbt/backtrader wiring
 signals/    # BUY/SELL/HOLD signal engine
+ui/         # Streamlit multipage app (see "Streamlit UI" above)
 tests/      # pytest suite (leakage tests are mandatory, see PROJECT_NOTES.md)
 config/     # config + .env loading
 ```

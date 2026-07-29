@@ -22,13 +22,37 @@ mcx_silver_ohlcv(
 The primary key on (date, contract) is what makes ingestion idempotent —
 running the same folder twice, or the daily EOD job on a day already stored,
 overwrites rather than duplicates.
+
+live_signals(
+    date                    DATE,          -- signal date (IST)
+    commodity               VARCHAR(32),   -- e.g. 'SILVERMIC'
+    signal                  VARCHAR(8),    -- 'BUY' | 'SELL' | 'HOLD'
+    predicted_return        DOUBLE,
+    confidence              DOUBLE NULL,   -- NULL when the model returned NaN
+    entry_price              DOUBLE,
+    stop_loss               DOUBLE NULL,
+    target                  DOUBLE NULL,
+    n_train_rows            INTEGER,
+    n_total_rows_available  INTEGER,
+    generated_at            TIMESTAMP,     -- when this row was last written
+    PRIMARY KEY (date, commodity)
+)
+
+One row per (date, commodity) -- the daily EOD job upserts today's signal
+here so the UI (and anything else) can read "what did we actually say on
+day X" after the fact, instead of only ever seeing the live in-memory
+signal from the moment run_eod_job.py ran.
 """
 
 from __future__ import annotations
 
+import datetime as dt
+import math
+from dataclasses import dataclass
+
 import pandas as pd
 from sqlalchemy import (
-    Column, Date, Double, BigInteger, String, TIMESTAMP, create_engine, text,
+    Column, Date, Double, BigInteger, Integer, String, TIMESTAMP, create_engine, text,
 )
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.dialects.mysql import insert as mysql_insert
@@ -52,6 +76,71 @@ class SilverOHLCV(Base):
     source = Column(String(32), nullable=False)
     ingested_at = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"),
                           onupdate=text("CURRENT_TIMESTAMP"))
+
+
+class LiveSignalRecord(Base):
+    __tablename__ = "live_signals"
+
+    date = Column(Date, primary_key=True)
+    commodity = Column(String(32), primary_key=True)
+    signal = Column(String(8), nullable=False)
+    predicted_return = Column(Double, nullable=False)
+    confidence = Column(Double, nullable=True)
+    entry_price = Column(Double, nullable=False)
+    stop_loss = Column(Double, nullable=True)
+    target = Column(Double, nullable=True)
+    n_train_rows = Column(Integer, nullable=False)
+    n_total_rows_available = Column(Integer, nullable=False)
+    generated_at = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"),
+                           onupdate=text("CURRENT_TIMESTAMP"))
+
+
+@dataclass(frozen=True)
+class LiveSignalRow:
+    """Plain-data shape that upsert_live_signal() writes -- kept separate
+    from signals.live_predict.LiveSignal so this module doesn't need to
+    import that module's runtime dependencies just to describe a row."""
+    date: dt.date
+    commodity: str
+    signal: str
+    predicted_return: float
+    confidence: float | None
+    entry_price: float
+    stop_loss: float | None
+    target: float | None
+    n_train_rows: int
+    n_total_rows_available: int
+
+
+def live_signal_to_row(live, commodity: str) -> LiveSignalRow:
+    """Pure transform from signals.live_predict.LiveSignal to LiveSignalRow.
+    No DB/network access -- kept separate and pure so it's cheaply testable
+    (see tests/test_live_signals.py). Two things it normalizes:
+      - pandas.Timestamp -> plain datetime.date (MySQL DATE column).
+      - NaN confidence -> None (a model can return NaN confidence in some
+        edge cases; storing NaN in a DOUBLE column round-trips inconsistently
+        across drivers, so None is the honest, portable choice).
+    """
+    date_val = live.date
+    if isinstance(date_val, pd.Timestamp):
+        date_val = date_val.date()
+
+    confidence = live.confidence
+    if confidence is not None and isinstance(confidence, float) and math.isnan(confidence):
+        confidence = None
+
+    return LiveSignalRow(
+        date=date_val,
+        commodity=commodity,
+        signal=live.signal,
+        predicted_return=live.predicted_return,
+        confidence=confidence,
+        entry_price=live.entry_price,
+        stop_loss=live.stop_loss,
+        target=live.target,
+        n_train_rows=live.n_train_rows,
+        n_total_rows_available=live.n_total_rows_available,
+    )
 
 
 def get_engine(echo: bool = False):
@@ -182,3 +271,56 @@ def get_latest_date(commodity: str | None = None, engine=None):
     if result is None:
         return None
     return pd.Timestamp(result)
+
+
+def upsert_live_signal(row: LiveSignalRow, engine=None) -> None:
+    """Upsert a single day's live signal into `live_signals`, keyed on
+    (date, commodity) -- same idempotent-rerun pattern as upsert_ohlcv()."""
+    engine = engine or get_engine()
+    init_db(engine)
+
+    values = dict(
+        date=row.date,
+        commodity=row.commodity,
+        signal=row.signal,
+        predicted_return=row.predicted_return,
+        confidence=row.confidence,
+        entry_price=row.entry_price,
+        stop_loss=row.stop_loss,
+        target=row.target,
+        n_train_rows=row.n_train_rows,
+        n_total_rows_available=row.n_total_rows_available,
+    )
+
+    with engine.begin() as conn:
+        stmt = mysql_insert(LiveSignalRecord).values(**values)
+        stmt = stmt.on_duplicate_key_update(
+            signal=stmt.inserted.signal,
+            predicted_return=stmt.inserted.predicted_return,
+            confidence=stmt.inserted.confidence,
+            entry_price=stmt.inserted.entry_price,
+            stop_loss=stmt.inserted.stop_loss,
+            target=stmt.inserted.target,
+            n_train_rows=stmt.inserted.n_train_rows,
+            n_total_rows_available=stmt.inserted.n_total_rows_available,
+        )
+        conn.execute(stmt)
+
+
+def load_live_signals(commodity: str | None = None, engine=None) -> pd.DataFrame:
+    """Read stored live signals back out as a DataFrame, indexed by date,
+    most recent first. Pass `commodity` to filter to one commodity."""
+    engine = engine or get_engine()
+    query = (
+        "SELECT date, commodity, signal, predicted_return, confidence, "
+        "entry_price, stop_loss, target, n_train_rows, n_total_rows_available, "
+        "generated_at FROM live_signals"
+    )
+    params = {}
+    if commodity:
+        query += " WHERE commodity = :commodity"
+        params["commodity"] = commodity
+    query += " ORDER BY date DESC"
+
+    df = pd.read_sql(text(query), engine, params=params, parse_dates=["date", "generated_at"])
+    return df.set_index("date")

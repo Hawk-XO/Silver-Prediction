@@ -150,6 +150,40 @@ def build_price_only_chart(price_series: pd.Series) -> go.Figure:
     return fig
 
 
+FORECAST_AMBER = "#FFA23D"
+
+
+def build_forecast_chart(
+    actual_price: pd.Series, predicted_price: pd.Series, start_date,
+) -> go.Figure:
+    """
+    Two lines, one chart: the real close (white, solid) and the model's
+    own multi-day-ahead guess (amber, dashed) starting exactly at
+    `start_date` -- no orders, no P&L, just "here's reality, here's what
+    the model thinks happens next." A vertical marker at `start_date`
+    makes it obvious where real data stops and the forecast begins.
+    """
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=actual_price.index, y=actual_price.values, mode="lines",
+        line=dict(color=LINE_WHITE, width=1.3), name="MCX Silver (actual)",
+        hovertemplate="%{x|%Y-%m-%d}<br>Actual: %{y:,.2f}<extra></extra>",
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=predicted_price.index, y=predicted_price.values, mode="lines+markers",
+        line=dict(color=FORECAST_AMBER, width=1.8, dash="dash"),
+        marker=dict(size=4, color=FORECAST_AMBER), name="Model forecast",
+        hovertemplate="%{x|%Y-%m-%d}<br>Forecast: %{y:,.2f}<extra></extra>",
+    ))
+
+    fig.add_vline(x=start_date, line=dict(color="#555555", width=1, dash="dot"))
+
+    fig.update_layout(**_base_layout("Actual vs. model forecast", "Price (\u20b9)"))
+    return fig
+
+
 def build_equity_chart(strategy_equity: pd.Series, buy_hold_equity: pd.Series, init_cash: float) -> go.Figure:
     fig = go.Figure()
     fig.add_trace(go.Scatter(
