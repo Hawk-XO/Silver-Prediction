@@ -78,7 +78,8 @@ def _strip_tz(df_or_series):
 @dataclass
 class ForecastConfig:
     contract: str = "SILVERMIC"
-    start_date: str = ""                   # required -- the "real data stops here" cutover point
+    train_start_date: str = ""             # optional -- lower bound of the training window; "" = use all history
+    start_date: str = ""                   # required -- the "real data stops here" cutover point (upper bound)
     horizon_days: int = 20                  # trading days to project forward
 
     xgb_max_depth: int = 3
@@ -112,13 +113,13 @@ def run_forecast(
     # --- Phase 1-2: real data load + continuous series + global merge, ---
     # --- same as data.pipeline_common.load_real_features's first half.  ---
     _report("Loading data from MySQL (proxy + kite_api rows)...", 3)
-    # Deliberately NOT capped by a recent lookback window (unlike
-    # pipeline_runner.py's LOOKBACK_BUFFER_DAYS) -- that buffer exists there
-    # because a walk-forward run re-fits once per fold across the whole
-    # requested range, so a huge buffer would be wasteful. This page does
-    # exactly ONE fit, so it should use every real row available before
-    # start_date (e.g. all the way back to 2016), not just the last ~500
-    # days -- more training history only helps a single fit, never hurts.
+    # Unlike pipeline_runner.py's LOOKBACK_BUFFER_DAYS (which exists because a
+    # walk-forward run re-fits once per fold across a whole requested range,
+    # so a huge buffer would be wasteful), this page does exactly ONE fit --
+    # so by default it uses every real row available before start_date (e.g.
+    # all the way back to 2016). Set cfg.train_start_date to deliberately
+    # bound the training window instead (e.g. to test how the model behaves
+    # trained on a specific regime).
     multi_contract = load_ohlcv()
     if multi_contract.empty:
         raise RuntimeError(
@@ -129,6 +130,14 @@ def run_forecast(
     multi_contract = multi_contract[prefix == cfg.contract]
     if multi_contract.empty:
         raise RuntimeError(f"No rows for commodity={cfg.contract!r}.")
+
+    if cfg.train_start_date:
+        train_start_ts = pd.Timestamp(cfg.train_start_date)
+        multi_contract = multi_contract[multi_contract.index >= train_start_ts]
+        if multi_contract.empty:
+            raise RuntimeError(
+                f"No rows on/after train_start_date {train_start_ts.date()} for {cfg.contract!r}."
+            )
 
     continuous = build_continuous_series(multi_contract)
     if continuous.index.max() < start_ts:
@@ -166,12 +175,27 @@ def run_forecast(
     feature_cols = get_feature_columns(features_train)
     model_ready = features_train.dropna(subset=feature_cols).copy()
 
-    if model_ready.empty or model_ready.index.max() < start_ts:
+    if model_ready.empty:
         raise ValueError(
             "After feature warmup (ema_200 alone needs 200 prior bars), there's no "
             "complete-feature row at or before start_date -- pick a later start_date "
             "or make sure enough history is loaded before it."
         )
+
+    # merged_train is built as "everything <= start_ts", so its last row can
+    # never be AFTER the picked date -- it just won't land exactly ON it if
+    # the picked date is a weekend or an MCX holiday (which the date-picker
+    # doesn't restrict against). Snap to the real last trading day instead
+    # of treating that as an error, and use the snapped date for everything
+    # downstream so the anchor point actually lines up with a real close.
+    warnings_list = []
+    anchor_ts = model_ready.index.max()
+    if anchor_ts != start_ts:
+        warnings_list.append(
+            f"{start_ts.date()} isn't a trading day in the stored data -- using the "
+            f"nearest prior trading day, {anchor_ts.date()}, as the anchor instead."
+        )
+    start_ts = anchor_ts
 
     effective_min_train_size = cfg.min_train_size
     min_train_auto_adjusted = False
@@ -185,7 +209,6 @@ def run_forecast(
             f"Pick a later start_date."
         )
 
-    warnings_list = []
     if min_train_auto_adjusted:
         warnings_list.append(
             f"Requested min_train_size={cfg.min_train_size} didn't fit before {start_ts.date()} "
@@ -253,8 +276,8 @@ def run_forecast(
     last_comex, last_usdinr, last_dxy = (
         working_merged["comex_close"].iloc[-1], working_merged["usdinr_close"].iloc[-1], working_merged["dxy_close"].iloc[-1],
     )
-    last_gold = gold_close.reindex(gold_close.index.union([start_ts])).ffill().loc[start_ts]
     working_gold = gold_close[gold_close.index <= start_ts].copy()
+    last_gold = working_gold.iloc[-1] if not working_gold.empty else gold_close.iloc[0]
 
     last_price = working_merged["mcx_close"].iloc[-1]
     predicted_prices = {start_ts: last_price}

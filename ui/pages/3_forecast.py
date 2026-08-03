@@ -55,26 +55,69 @@ with st.sidebar:
     st.header("Forecast setup")
     st.text(f"Contract: {CONTRACT}")
 
-    st.subheader("Start date")
-    start_date = st.date_input(
-        "Model sees real data up to and including this date",
-        value=pd.Timestamp.today() - pd.Timedelta(days=30),
-        key="fc_start_date",
-    ).isoformat()
-
-    horizon_days = st.slider(
-        "Forecast horizon (trading days forward)", min_value=5, max_value=60, value=20, key="fc_horizon",
+    st.subheader("Training data range")
+    default_train_start = (pd.Timestamp.today() - pd.Timedelta(days=365 * 3)).date()
+    default_train_end = (pd.Timestamp.today() - pd.Timedelta(days=30)).date()
+    train_range = st.date_input(
+        "Use data from X to Y to train the model (Y also becomes the forecast anchor)",
+        value=(default_train_start, default_train_end),
+        key="fc_train_range",
     )
+    if isinstance(train_range, tuple) and len(train_range) == 2:
+        train_start_input, start_date_input = train_range
+    else:
+        # Streamlit returns a single date (mid-selection, before the second
+        # click) instead of a 2-tuple -- fall back to a sane end date so the
+        # rest of the page doesn't break while the user finishes picking.
+        train_start_input = train_range[0] if isinstance(train_range, tuple) else train_range
+        start_date_input = default_train_end
+        st.caption("Pick an end date for the training range too.")
+
+    train_start_date = train_start_input.isoformat()
+    start_date = start_date_input.isoformat()
+
+    st.subheader("Forecast until")
+    anchor_ts = pd.Timestamp(start_date_input)
+    MAX_HORIZON_DAYS = 750  # ~3 years of trading days -- past this the roll-forward (each
+    # step recomputes technical features over the whole growing series) gets slow, and the
+    # forecast itself is close to meaningless that far from any real anchor point anyway.
+    min_forecast_date = (anchor_ts + pd.Timedelta(days=1)).date()
+    max_forecast_date = (anchor_ts + pd.Timedelta(days=int(MAX_HORIZON_DAYS * 7 / 5) + 30)).date()
+    default_forecast_date = max(min_forecast_date, (anchor_ts + pd.Timedelta(days=28)).date())
+
+    end_date_input = st.slider(
+        "Drag to pick the forecast end date",
+        min_value=min_forecast_date, max_value=max_forecast_date, value=default_forecast_date,
+        key="fc_end_date",
+    )
+
+    # Trading-day count between the two picks -- an estimate (calendar
+    # weekends only, doesn't know MCX's specific holiday calendar), so the
+    # backend may end up running a day or two fewer/more once it snaps to
+    # real trading days on its end. Good enough to drive the run.
+    horizon_days = max(1, len(pd.bdate_range(start=start_date_input, end=end_date_input)) - 1)
+    horizon_days = min(horizon_days, MAX_HORIZON_DAYS)
+
+    st.caption(f"\u2248 {horizon_days} trading days forward (to {end_date_input.isoformat()})")
+    if horizon_days > 250:
+        st.caption(
+            "\u26a0\ufe0f This far out, remember: global factors are frozen at their last real "
+            "value and the model is compounding its own guesses on top of guesses -- treat "
+            "this as 'what does the model's own drift look like extrapolated,' not a real prediction."
+        )
 
     with st.expander("Model settings"):
         xgb_max_depth = st.number_input("XGBoost max depth", min_value=1, max_value=10, value=3, key="fc_depth")
         xgb_n_estimators = st.number_input(
             "XGBoost n_estimators", min_value=10, max_value=500, value=80, step=10, key="fc_estimators",
         )
-        arima_exog_cols = st.multiselect(
-            "ARIMA exogenous features", options=DEFAULT_ARIMA_EXOG_CHOICES,
+        arima_exog_cols = st.pills(
+            "ARIMA exogenous features", DEFAULT_ARIMA_EXOG_CHOICES, selection_mode="multi",
             default=["ret_mean_5", "comex_mcx_spread_z_10"], key="fc_exog",
-        )
+            help="Extra features (beyond silver's own price history) fed to the ARIMA model as "
+                 "external predictors -- e.g. the COMEX/MCX spread or gold/silver ratio. "
+                 "Leave empty to run ARIMA on price history alone.",
+        ) or []
         min_train_size = st.number_input(
             "Min training rows", min_value=20, max_value=1000, value=120, step=10, key="fc_min_train",
         )
@@ -125,7 +168,7 @@ if run_clicked:
         st.session_state.fc_freshness_checked = True
 
     cfg = ForecastConfig(
-        contract=CONTRACT, start_date=start_date, horizon_days=int(horizon_days),
+        contract=CONTRACT, train_start_date=train_start_date, start_date=start_date, horizon_days=int(horizon_days),
         xgb_max_depth=int(xgb_max_depth), xgb_n_estimators=int(xgb_n_estimators),
         arima_exog_cols=list(arima_exog_cols), min_train_size=int(min_train_size),
     )
@@ -177,10 +220,12 @@ else:
     if result.warning:
         st.warning(result.warning)
 
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Start date", result.start_date.date().isoformat())
-    m2.metric("Forecast horizon", f"{result.config.horizon_days} trading days")
-    m3.metric("Training rows used", f"{result.n_train_rows:,}")
+    m1, m2, m3, m4 = st.columns(4)
+    train_start_display = result.config.train_start_date or "earliest available"
+    m1.metric("Training data from", train_start_display)
+    m2.metric("Anchor / start date", result.start_date.date().isoformat())
+    m3.metric("Forecast horizon", f"{result.config.horizon_days} trading days")
+    m4.metric("Training rows used", f"{result.n_train_rows:,}")
 
     st.markdown("---")
 
