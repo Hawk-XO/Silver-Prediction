@@ -33,8 +33,12 @@ import streamlit as st
 
 from ui.theme import inject_theme
 from ui.pipeline_runner import check_and_fetch_missing_data
+from ui.kite_connect import render_kite_connect_panel
 
 inject_theme()
+
+with st.sidebar:
+    render_kite_connect_panel()
 
 st.title("SILVER PREDICTION")
 st.caption("Start here -- confirm data is current, then choose a screen.")

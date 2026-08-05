@@ -40,7 +40,6 @@ from ui.pipeline_runner import (
 from ui.charts import build_price_chart, build_price_only_chart, build_equity_chart
 from ui.format_utils import build_display_comparison, metric_winner
 from ui.report_export import build_pdf_report
-from ui.kite_connect import render_kite_connect_panel
 
 inject_theme()
 
@@ -175,9 +174,6 @@ with st.sidebar:
             f"\u20b9{_slippage_rs:,.0f} in slippage per order (\u20b9{_notional:,.0f} notional) -- "
             f"verify against a live quote and your broker's calculator."
         )
-
-    st.markdown("---")
-    render_kite_connect_panel()
 
     st.markdown("---")
     run_clicked = st.button("RUN", width="stretch")
